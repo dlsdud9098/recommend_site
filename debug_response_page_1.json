@@ -1,0 +1,593 @@
+{
+  "data": {
+    "staticLandingGenreSection": {
+      "id": "static-landing-Genre-section-Layout-11-0-update-false-84",
+      "uid": null,
+      "type": "LandingGenre",
+      "title": "웹소설 장르 전체",
+      "isEnd": false,
+      "totalCount": null,
+      "param": {
+        "categoryUid": 11,
+        "subcategory": {
+          "name": "전체",
+          "param": "0"
+        },
+        "sortType": {
+          "name": "업데이트 순",
+          "param": "update"
+        },
+        "page": 1,
+        "isComplete": false,
+        "screenUid": 84
+      },
+      "groups": [
+        {
+          "id": "static-landing-Genre-group-11-0-84-update-false",
+          "type": "PosterView",
+          "dataKey": null,
+          "items": [
+            {
+              "id": "PosterView-itemSeries-65485292-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=65485292",
+              "title": "검술영재 → 마법천재",
+              "altText": "작품, 검술영재 → 마법천재, 기다무, 최신 회차 업데이트됨, 조회수 100.9만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=xEi1L/hAFPT51kT0/dZQdT5rw2fAYiMYGxjN8v0&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "100.9만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 65485292,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-65227617-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=65227617",
+              "title": "태평천하",
+              "altText": "작품, 태평천하, 기다무, 최신 회차 업데이트됨, 조회수 172.6만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=7NPKD/hAFPQBk9mx/9v7rEbzhwwQdjpaJDQ8hRK&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "172.6만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 65227617,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66870599-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66870599",
+              "title": "쌓인 돈으로 대한민국을 먹다",
+              "altText": "작품, 쌓인 돈으로 대한민국을 먹다, 신작, 15세 연령 제한, 조회수 3,176, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=bfiJTa/hAJmIsPn2z/z4kOaEn7quoicolGUrO1k0&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": "BadgeAge15Static",
+              "statusBadge": "BadgeNewStatic",
+              "subtitleList": [
+                "3,176"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "Fifteen",
+              "selfCensorship": null,
+              "seriesId": 66870599,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66472168-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66472168",
+              "title": "특전사, 재벌가의 사위가 되다",
+              "altText": "작품, 특전사, 재벌가의 사위가 되다, 최신 회차 업데이트됨, 조회수 10.7만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=yxc9A/hAJmNnf7EW/G7pTEtzCNDG748BbMei05k&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "10.7만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 66472168,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66086858-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66086858",
+              "title": "회귀한 조선, 히데요시를 베다",
+              "altText": "작품, 회귀한 조선, 히데요시를 베다, 최신 회차 업데이트됨, 조회수 5.6만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=hzZqn/hAJrONSe2B/1E9fCCLmJiSv7JOBToIZG1&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "5.6만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 66086858,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-65630411-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=65630411",
+              "title": "영화 보는 헌터님",
+              "altText": "작품, 영화 보는 헌터님, 기다무, 최신 회차 업데이트됨, 조회수 14.9만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=HhGJM/hAJmJEVa9O/RGEcpMBqkdM3iCos98dEa0&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "14.9만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 65630411,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-65173585-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=65173585",
+              "title": "인생 2회차 효자는 홈런왕",
+              "altText": "작품, 인생 2회차 효자는 홈런왕, 기다무, 최신 회차 업데이트됨, 조회수 665.7만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=cvUjjW/hAHIoJwbOK/vTYmrttlraGwgaDNQYd5W0&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "665.7만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 65173585,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-64911750-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=64911750",
+              "title": "말석 영웅이 회귀했다",
+              "altText": "작품, 말석 영웅이 회귀했다, 기다무, 최신 회차 업데이트됨, 조회수 1,024.5만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=kMhKL/hAFszG1OuL/x59OheOly7tOMoVZPf0QW1&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "1,024.5만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 64911750,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-62611550-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=62611550",
+              "title": "다시 한번 아역부터 슈퍼스타",
+              "altText": "작품, 다시 한번 아역부터 슈퍼스타, 기다무, 최신 회차 업데이트됨, 조회수 569.6만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=Fx7qh/hAJrHUCyin/hZdGzxGa2rBE4lbn0JGN10&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "569.6만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 62611550,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66667170-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66667170",
+              "title": "파병의 유령",
+              "altText": "작품, 파병의 유령, 최신 회차 업데이트됨, 조회수 15.2만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=c5nFg/hALRVbNtx7/7B0tvHwTOUzJlOShdwwByK&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "15.2만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 66667170,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66624310-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66624310",
+              "title": "황녀가 정체를 숨겼는데 남친만 그걸 몰라",
+              "altText": "작품, 황녀가 정체를 숨겼는데 남친만 그걸 몰라, 기다무, 최신 회차 업데이트됨, 조회수 65.4만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=CnJ0Z/hAJq9w7BLA/bm9l45oClMk23Hhv3BXORK&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "65.4만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 66624310,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66546996-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66546996",
+              "title": "삼촌이 광마임",
+              "altText": "작품, 삼촌이 광마임, 삼다무, 최신 회차 업데이트됨, 조회수 119.5만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=dgskYT/hAJjJyuelW/OkM6TcFIpPi3UlfK9MmMtk&filename=th3",
+              "badgeList": [
+                "Badge3HourWaitfreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "119.5만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 66546996,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66426801-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66426801",
+              "title": "정령이 모여드는 마법 샘의 주인이 되었다",
+              "altText": "작품, 정령이 모여드는 마법 샘의 주인이 되었다, 기다무, 최신 회차 업데이트됨, 조회수 366만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=bTjj7J/hAMhiqOaXT/4b2sQfgUA54i08SXoAa8x0&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "366만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 66426801,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66202074-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66202074",
+              "title": "객잔 주인이 요리를 너무 잘함",
+              "altText": "작품, 객잔 주인이 요리를 너무 잘함, 최신 회차 업데이트됨, 조회수 2.7만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=bZhmvp/hALRXN5rmb/l49pKQODmhHCHabuhEHGik&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "2.7만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 66202074,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-65982111-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=65982111",
+              "title": "이번 생은 낭만형 미드필더",
+              "altText": "작품, 이번 생은 낭만형 미드필더, 기다무, 최신 회차 업데이트됨, 조회수 33.3만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=dq3og/hAKLDcjHhq/iur2diDkFwVgPJ7WC0StU1&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "33.3만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 65982111,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-65864588-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=65864588",
+              "title": "도시협객전",
+              "altText": "작품, 도시협객전, 최신 회차 업데이트됨, 조회수 4만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=5qLBa/hAJq8YZHok/L0k9TgWMvT6lf6ntF4hGS0&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "4만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 65864588,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-65835913-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=65835913",
+              "title": "눈떠보니 러시아 마피아",
+              "altText": "작품, 눈떠보니 러시아 마피아, 최신 회차 업데이트됨, 조회수 43.5만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=bxG42T/hAJrL4rTZU/VhgxHSKak9t2ocNnKpZvBk&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "43.5만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 65835913,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-65507078-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=65507078",
+              "title": "종말 서울의 EX급 해결사가 되었다",
+              "altText": "작품, 종말 서울의 EX급 해결사가 되었다, 최신 회차 업데이트됨, 조회수 1.9만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=hWVaO/hAJmQc1q8u/xiA8mjo6lvO3HOOc7LvmBk&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "1.9만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 65507078,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-63993823-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=63993823",
+              "title": "버림받은 축구천재",
+              "altText": "작품, 버림받은 축구천재, 최신 회차 업데이트됨, 조회수 32.3만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=lzyTT/hAd40LleLf/EEvF4aRK4ertOPl87llUf0&filename=th3",
+              "badgeList": [],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "32.3만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 63993823,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-61389914-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=61389914",
+              "title": "천재학사의 무공백과",
+              "altText": "작품, 천재학사의 무공백과, 기다무, 최신 회차 업데이트됨, 조회수 556만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=cdKJWb/hzXau2fi6X/TDkUkTLAXT3z1UK0KFChq0&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "556만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 61389914,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-60346254-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=60346254",
+              "title": "천하제일 무공교관",
+              "altText": "작품, 천하제일 무공교관, 삼다무, 최신 회차 업데이트됨, 조회수 6,314만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=oMHLe/hAKLAGtFFD/CTKkskFkJ1KOo5KwuJd3MK&filename=th3",
+              "badgeList": [
+                "Badge3HourWaitfreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "6,314만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 60346254,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-60325864-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=60325864",
+              "title": "농장 재벌도 육아합니다",
+              "altText": "작품, 농장 재벌도 육아합니다, 기다무, 최신 회차 업데이트됨, 조회수 75.7만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=IQmMK/hyCRbhOets/4WWLf3vJKpWx9DKdIiupm0&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "75.7만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 60325864,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-61738873-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=61738873",
+              "title": "역대급 천재 랭커의 귀환",
+              "altText": "작품, 역대급 천재 랭커의 귀환, 기다무, 최신 회차 업데이트됨, 조회수 2,305.8만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=zV2En/hAFPKU4XQG/30RRlAQkoOgsKNGpmYhhZ0&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "2,305.8만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 61738873,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            },
+            {
+              "id": "PosterView-itemSeries-66136165-undefined-ViewCount",
+              "type": "PosterView",
+              "scheme": "kakaopage://open/content?series_id=66136165",
+              "title": "요리의 신이 강림했다",
+              "altText": "작품, 요리의 신이 강림했다, 기다무, 최신 회차 업데이트됨, 조회수 51.9만, 버튼",
+              "thumbnail": "//dn-img-page.kakao.com/download/resource?kid=qyydT/hAJq5BhJiK/gD9100kizxrFGd5mZ352Gk&filename=th3",
+              "badgeList": [
+                "BadgeWaitFreeStatic"
+              ],
+              "ageGradeBadge": null,
+              "statusBadge": "BadgeUpStatic",
+              "subtitleList": [
+                "51.9만"
+              ],
+              "rank": null,
+              "rankVariation": null,
+              "ageGrade": "All",
+              "selfCensorship": null,
+              "seriesId": 66136165,
+              "showDimmedThumbnail": null,
+              "discountRate": null,
+              "discountRateText": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

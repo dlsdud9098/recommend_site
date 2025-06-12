@@ -1,0 +1,706 @@
+
+
+
+
+
+
+<!doctype html>
+<html lang="ko">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Expires" content="-1">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="No-Cache">
+
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no,target-densitydpi=medium-dpi" />
+
+
+
+<title>경제왕 연산군</title>
+
+
+
+
+
+	
+	
+	
+		<link rel="shortcut icon" type="image/x-icon" href="https://ssl.pstatic.net/static/nstore/img_series_favicon_96.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="96x96" href="https://ssl.pstatic.net/static/nstore/series_favicon_144.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://ssl.pstatic.net/static/nstore/series_favicon_152.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="192x192" href="https://ssl.pstatic.net/static/nstore/img_series_favicon_192.png" />
+	
+
+
+
+<link rel="stylesheet" href="/css/swiper.min.css?1742349089000" type="text/css">
+
+<link rel="stylesheet" href="/css/w.css?1742349089000" type="text/css">
+
+<link rel="stylesheet" href="/css/nstore_w.css?1744594700000" type="text/css">
+
+
+
+
+
+<script type="text/javascript">
+
+var gIosEnv = false;
+var gAndroidEnv = true;
+var gSupportedDeviceByTvApp = true;
+var gSupportedDeviceByBooksApp = true;
+
+var gsBooksAppInstallUrl;
+var gsTvAppIntallUrl;
+var gsNaverAppstoreAppInstallUrl;
+
+if (false) {
+	gsBooksAppInstallUrl = "http://itunes.apple.com/app/id433592412?mt=8";
+	gsTvAppIntallUrl = "http://itunes.apple.com/app/id530059576?mt=8";	
+} else {
+	gsBooksAppInstallUrl = "market://details?id=com.nhn.android.nbooks";
+	gsTvAppIntallUrl = "market://details?id=com.nhn.android.navertv";
+	gsNaverAppstoreAppInstallUrl = "http://m.nstore.naver.com/appstore/downloadNaverAppStore.nhn";
+}
+
+
+var LOGIN_STATUS = {
+	"LOGIN" : 0,
+	"LOGOUT" : 1,
+	"UNKNOWN" : 2
+};
+
+var ID_TYPE_STATUS = {
+		"PERSONAL" : 0,
+		"PRIVATELY_OWNED_BUSINESS" : 1,
+		"PROFIT_CORPORATION" : 2,
+		"NONPROFIT_CORPORATION" : 3,
+		"ETC" : 4
+};
+
+var gIsGroupId = false;
+
+var gLoginStatus;
+if (false == true) {
+	gLoginStatus = LOGIN_STATUS.LOGIN; 
+} else if (false == false) {
+	gLoginStatus = LOGIN_STATUS.LOGOUT;
+} else {
+	gLoginStatus = LOGIN_STATUS.UNKNOWN;
+}
+
+var gIsGroupId = false;
+if (false == true && true) {
+	gIsGroupId = true;
+}
+
+
+var gIsRealName = false;
+if (false == true && false) {
+	gIsRealName = true;
+} 
+
+
+var logoutCurrentFullUrl = "";
+var loginCurrentFullUrl = "";
+
+
+var ccsrv = "cc.naver.com";
+var nsc = "Mseries";
+
+
+var lcs_SerName = "lcs.naver.com";
+
+
+var gRosYn = 'N';
+var gRosAlertMessage = '서비스 점검 중입니다.\n\n점검시간: 8월 4일 02시~07시(5시간)\n\n네이버페이 DB점검 작업으로 서비스 이용이\n불가능합니다. 이용에 불편을 드려 죄송합니다.';
+
+
+var gInspYn = 'Y';
+
+var isNaverInApp = false;
+var isNaverSearchAppInappBrower = false;
+var isNaverAppstoreInappMenu = false;
+var isNaverAppstoreInappBrowser = false;
+
+var gsDenyGroupIdMessage = "단체 아이디로 로그인하면 이용할 수 없습니다. 일반 아이디로 로그인 후 다시 이용해 주세요.";
+</script>
+
+
+<script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-140047759-3"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('set', {'user_id': ''});
+    gtag('config', 'UA-140047759-3');
+</script>
+
+    <meta name="jsfooter" content="/WEB-INF/jsp/comicnovel/detailScriptSeries.jsp" />
+
+    
+    <meta name="description" content=" 작가: 라구.B.P, 총209화 연재중 · 23화 무료, #NOVEL, #판타지, 줄거리: [2024 지상최대 웹소설 공모전 수상작]
+
+젊음의 치기로 복수전공이라는 잘못된 선택을 한 사학과&amp;경제학과 학부생 박경식. 이제 4학년이니 이 고생도 곧 끝이다!
+급한 마음에 사학과 졸업논문을 날림으로 썼는데, 교수가 갑자기 부른다. 교수를 따라갔더니 대학원 오라는 권유가 아니라 자기가 산신령이라고 커밍아웃해오는데?!
+정신을 차리니 조선의 왕으로 즉위해 있다.
+조선의 파이어족이 되기 위해 조선의 경.." />
+
+    <link rel="stylesheet" type="text/css" href="https://common.like.naver.com/css/ssl/likeItButton_NSTORE.css">
+
+    
+    
+
+
+
+
+
+<meta property="og:title" content="경제왕 연산군"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://m.series.naver.com/novel/detail.series?productNo=11682082"/>
+<meta property="og:image" content="https://comicthumb-phinf.pstatic.net/20240930_175/pocket_1727626789788YGjEc_JPEG/%B0%E6%C1%A6%BF%D5_%BF%AC%BB%EA%B1%BA_%C5%B8%C0%CC%C6%B2_%C3%D6%C1%BE.jpg?type=m600x314"/>
+<meta property="og:description" content="[2024 지상최대 웹소설 공모전 수상작]
+
+젊음의 치기로 복수전공이라는 잘못된 선택을 한 사학과&amp;경제학과 학부생 박경식. 이제 4학년이니 이 고생도 곧 끝이다!
+급한..."/>
+<meta property="og:article:author" content="북스토어 | 웹소설 | 네이버 시리즈"/>
+
+    
+        
+        
+            
+        
+    
+    <script>
+        var g_ssc = "Mseries.novel";
+        var ccsrv = "cc.naver.com";
+        window.nsc = g_ssc;
+    </script>
+    <script src="/js/nclk.js"></script>
+
+    
+    <style>
+      /* 좋아요 수정 */
+      .u_likeit_module.v2 .u_btn_likeit .u_likeit_ico,.u_likeit_module.v2 .u_btn_likeit_on .u_likeit_ico{display:block;width:15px;height:14px;margin:2px auto 1px auto;background:url(https://ssl.pstatic.net/static/m/nstore/im/sp_movieevt_v8.png) no-repeat -141px -205px;background-size:250px 300px;-webkit-background-size:250px 300px}
+      .u_likeit_module.v2 .u_btn_likeit_on .u_likeit_ico{background-position:-141px -225px}
+
+      /* 좋아요 v2 버전 */
+      .u_likeit_module.v2 .u_likeit_cnt{display:block;margin-left:0;color:rgba(0,0,0,.8);font-size:11px;line-height:20px;text-align:center;font-weight:normal;font-family:'나눔고딕',NanumGothic,'맑은 고딕','Malgun Gothic','돋움',Dotum,'굴림',Gulim,Helvetica,sans-serif !important;text-shadow:none !important}
+      .u_likeit_module.v2 .u_btn_likeit_on .u_likeit_cnt{color:#ff2c48}
+      .u_likeit_module.v2 .u_btn_likeit{background-color:#fff;border:0}
+      .u_likeit_module.v2 .u_likeit_rbox{border:0}
+    </style>
+
+</head>
+
+</head>
+
+	
+	
+	<body class="a " >
+	
+
+<div class="u_skip"><a href="#ct">본문 바로가기</a></div>
+<header role="banner" class="type_series">
+
+
+
+
+
+
+
+<script>
+	var g_ssc = "Mseries.novel";
+	var ccsrv = "cc.naver.com";
+	window.nsc = g_ssc;
+</script>
+<script src="/js/nclk.js"></script>
+
+
+	
+
+
+
+<!-- GNB -->
+<div id="nstoreGnb" class="Ngnb" style="will-change: contents;">
+	<!-- 네이버홈 -->
+	<span class="Ngnb_logo"><a href="http://m.naver.com" class="Nlogo_link" onclick="nclk_v2(event, 'gnb.naver');"><span class="Nicon_logo">NAVER</span></a></span>
+	<div class="Ngnb_service">
+		<h1 class="Nservice_item"><a href="https://m.series.naver.com" onclick="nclk_v2(event, 'gnb.series');"><span class="lego_title_series">시리즈</span></a></h1>
+	</div>
+	<div class="Ngnb_tool">
+		<!--  button 태그 / a 태그 모두 사용할 수 있음 -->
+		<a href="/search/web/search.series" class="Ntool_button"><span class="gnb_search" onclick="nclk_v2(event, 'gnb.search');">검색</span></a>
+		<a class="Ntool_button gnb_cart" href="/cart/list.series?from=LNB" onclick="nclk_v2(this, 'gnb.cart', '', '');"><span class="btn_cart">장바구니</span>
+			
+		</a>
+		<a class="Ntool_button gnb_mypage" href="/my/library/productList.series"  onclick="nclk_v2(this, 'gnb.my', '', '');">
+			<span class="btn_mypage">마이페이지</span>
+		</a>
+	</div>
+
+	
+	
+		<input type="hidden" id="acsection" value="all_">
+		
+	
+	
+		<input type="hidden" name="t" value="all">
+		
+	
+	
+		
+		<input type="hidden" name="fs" value="novel">
+		
+	
+</div>
+
+
+
+	
+	
+	<nav>
+		
+
+
+
+
+
+
+
+
+
+<script>
+	var g_ssc = "Mseries.novel";
+	var ccsrv = "cc.naver.com";
+	window.nsc = g_ssc;
+</script>
+<script src="/js/nclk.js"></script>
+
+<div class="lnb">
+	<div class="slide" style="overflow: hidden; position: relative;">
+		<div class="inr">
+			<ul class="tab_my">
+				<li class="on"><a href="/novel/recommendList.series" onclick="nclk_v2(event, 'lnb.novel');"><span>웹소설</span></a></li>
+				<li class=""><a href="/comic/recommendList.series" onclick="nclk_v2(event, 'lnb.comic');"><span>만화</span></a></li>
+				<li class=""><a href="/ebook/recommendList.series" onclick="nclk_v2(event, 'lnb.ebook');"><span>e북</span></a></li>
+				<li class="lego_lnb_etc">
+
+				</li>
+
+			</ul>
+		</div>
+	</div>
+</div>
+<h4 class="u_hc"></h4>
+
+		
+		
+	</nav>
+	
+
+</header>
+
+
+
+<hr />
+
+
+<!-- ct -->
+<div id="ct" role="main">
+    <div class="nstore_open">
+        
+
+        
+
+        <div class="nstore_rental">
+            <div class="nstore_content">
+                <div class="content_thum">
+                    <a href="https://comicthumb-phinf.pstatic.net/20240930_175/pocket_1727626789788YGjEc_JPEG/%B0%E6%C1%A6%BF%D5_%BF%AC%BB%EA%B1%BA_%C5%B8%C0%CC%C6%B2_%C3%D6%C1%BE.jpg" class="thum_img" onClick="nclk_v2(event, 'end.img');">
+                        
+                            
+                                <span class="ico_onlyfree2">
+                                    <span class="u_hc">매일10시무료</span>
+                                </span>
+                            
+                            
+                        
+                        <span class="cartoon_bg2"></span>
+                        <img src="https://comicthumb-phinf.pstatic.net/20240930_175/pocket_1727626789788YGjEc_JPEG/%B0%E6%C1%A6%BF%D5_%BF%AC%BB%EA%B1%BA_%C5%B8%C0%CC%C6%B2_%C3%D6%C1%BE.jpg" width="100" height="143" alt="웹소설정보"
+                             onerror="this.src='https://ssl.pstatic.net/static/m/nstore/thumb/no/end_book_4.png'">
+                    </a>
+                </div>
+
+                <div class="content_text">
+                    <strong>경제왕 연산군</strong>
+                    <div class="area_star_box">
+                        <ul class="area_ulist">
+                            <li>
+                                <strong class="u_hc">별점</strong>
+                                <span class="area_ico_star"><span class="this_text">9.6</span></span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="are_information">
+                        <ul>
+                            <li class="area_card">
+                                <dl class="area_dlist">
+                                    <dt class="u_hc">연재상태</dt>
+                                    <dd>
+                                        
+                                        연재중
+                                    </dd>
+                                    <dt class="u_hc">장르</dt>
+                                    <dd class="type_middledot">판타지</dd>
+                                    <dt class="u_hc">이용가</dt>
+                                    <dd class="type_middledot">전체 이용가</dd>
+                                    
+                                </dl>
+                            </li>
+                            <li class="area_card">
+                                <dl class="area_dlist">
+                                    <dt class="type_bar">작가</dt>
+                                    
+                                        
+                                        
+                                            <dd>라구.B.P</dd>
+                                            
+                                        
+                                    
+                                </dl>
+                            </li>
+                            <li class="area_card relative_content">
+                                <dl class="area_dlist">
+                                    
+                                </dl>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <div class="bottom_btn_box">
+                        
+                        
+                        
+                        
+                    </div>
+                </div>
+            </div>
+
+            
+                <div class="content_activity">
+                    <ul>
+                        <li>
+                            <div class="u_likeit_module v2" id="likeItCountViewDiv">
+                                <div class="u_likeit_rbox">
+                                    <a href="#" class="u_btn_likeit" >
+                                        <span class="u_likeit_ico"></span>
+                                        <span class="u_likeit_cnt">0</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div style="display: none;">
+                                <div id="likeItScrollDiv" style="display:none" class="u_likeit_module">
+                                    <div class="u_likeit_friends" id="likeItFriendListDiv"></div>
+                                </div>
+                            </div>
+                        </li>
+                        <li><a href="/novel/review.series?productNo=11682082&writeArea=on&prime=true" class="review" onclick="nclk_v2(event, 'end.review', '11682082')"><span id="commentCount">4443</span></a></li>
+                        <li class="">
+                            <a id="productFavorite" href="#" class="attention newFav FavoriteProductManager.addFavoriteProduct(11682082)">
+                                <span>관심</span>
+                            </a>
+                        </li>
+                        
+                            
+                            <li>
+                                <a href="javascript:socialShare();" class="share" onclick="nclk_v2(event, 'end.share', '11682082')"><span>공유</span></a>
+                                <div class="naver-splugin sns" data-style="sns" data-oninitialize="splugin_oninitialize();" style="display: none;"></div>
+                            </li>
+                            
+                        
+                    </ul>
+                </div>
+            
+
+            
+
+
+
+
+<div class="area_button_first ">
+    
+        
+        
+            
+                
+                
+                
+                
+                    <a href="#" id="first11682083" onclick="nclk_v2(event, 'end.firstview', '11682082','1')" class="area_inner
+                        _orderFreeTicketProduct(NOVEL,11682083,587796,1)
+                        _lanuchVolumnViewerAfterAction(,NOVEL,2,587796,1,%EA%B2%BD%EC%A0%9C%EC%99%95+%EC%97%B0%EC%82%B0%EA%B5%B0,false)">
+                
+                
+            
+            
+                
+                
+                    무료로 첫화보기</a>
+                
+                
+            
+        
+    
+</div>
+
+        </div>
+
+        <div class="area_end_information_list">
+            <dl class="area_dlist">
+                
+                    <div class="area_card">
+                        <dt class="u_hc">작품 소개</dt>
+                        <dd>
+                            <a class="area_card_inner" href="/novel/moreDetail.series?productNo=11682082" onclick="nclk_v2(this, 'end.story', '11682082')">
+                                <span class="area_text">[2024 지상최대 웹소설 공모전 수상작]
+
+젊음의 치기로 복수전공이라는 잘못된 선택을 한 사학과&경제학과 학부생 박경식. 이제 4학년이니 이 고생도 곧 끝이다!
+..</span>
+                            </a>
+                        </dd>
+                    </div>
+                
+
+                
+                    <div class="area_card type_notice">
+                        <dt class="u_hc">공지</dt>
+                        <dd>
+                            <a href="/novel/moreNotiDetail.series?productNo=11682082" class="area_card_inner" onclick="nclk_v2(this, 'end.notice', '11682082')">
+                                <span class="area_text">* 파일 교체 공지
+207, 208화 파일이 교체되었습니다. ( 오탈자 수정, 6/5 )
+198, 203화 파일이 교체되었습니다. ( 오탈자 수정, 5/26 )
+..</span>
+                            </a>
+                        </dd>
+                    </div>
+                
+
+                
+                
+                
+                
+                
+                
+                
+
+                
+                    
+                    
+                        
+                            <div class="area_card type_price_information ">
+                                <dt class="u_hc">가격 정보</dt>
+                                <dd>
+                                    <a href="/novel/moreDetailPrice.series?productNo=11682082" class="area_card_inner" onclick="nclk_v2(this, 'end.price', '11682082')">
+                                        <div class="area_text">
+                                            <div class="area_texts_box">
+                                                <div class="this_text_keep">
+                                                    
+                                                    
+
+                                                    
+                                                    
+                                                        
+                                                        
+                                                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                    <strong>소장</strong>
+                                                                    <span class="">쿠키 1개</span>
+                                                                
+                                                            
+                                                        
+                                                        
+                                                        
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </dd>
+                            </div>
+                        
+                    
+                
+
+                
+
+                
+            </dl>
+        </div>
+        <div class="myuseinfo">
+        
+            
+                <div class="info_cookie_box">
+                    <div class="info_cookie">
+                        <span class="text_main">보유 중인 쿠키 수를 확인하세요</span>
+                    </div>
+                    <a href="javascript:void(0);" class="btn_green" onclick="util.login(); nclk_v2(event, 'end.login');">로그인</a>
+                </div>
+            
+            
+        
+
+        </div>
+
+        
+            
+            
+            
+                <div class="lego_banner_main type_end_ten ">
+                    <a href="#" class="area_link_inner BookStoreAppLauncher.launchEndDetail(587796,false)" onclick="nclk_v2(this, 'end.sapp', '11682082')">
+                        <p class="area_text"><span class="u_hc"><em>매일10시무료!</em> 앱에서 시작하면 매일 한 편씩 무료로 볼 수 있어요. <strong>앱으로 보기</strong></span></p>
+                    </a>
+                </div>
+            
+            
+            
+        
+        
+
+
+
+
+
+
+
+
+
+
+        <div class="rental_tap">
+            <div class="rental_state">
+                <div class="tab_area v2">
+                    <div id="total_part" class="total_part on ">
+                        
+                            
+                            
+                                <div class="total_sum">
+                                    <span>총 209화</span>
+                                    
+                                        <span class="partial_free">
+                                            <span>23화 무료</span>
+                                        </span>
+                                    
+                                </div>
+                                <div class="index_tab">
+                                    <div class="sequence">
+                                        <a href="javascript:void(0);" class="number _changeSortOrder()  asc " onclick="nclk_v2(this, 'lst.seq', '11682082')"><em>1</em>화부터</a>
+                                        <a href="javascript:void(0);" class="new_content _changeSortOrder() on" onclick="nclk_v2(this, 'lst.recent', '11682082')">최신순</a>
+                                    </div>
+                                </div>
+                            
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="content_list">
+                
+                
+
+                <script type="text/template" id="volumeTicketMoreListTemplate">
+                    <li>
+                        
+                        <div class="_lendingTab" style="display: inline;">
+                            
+                                
+                                
+                                    
+                                    {if false == true && 1 == volumeNo}
+                                        <a href="#" class="BookStoreAppLauncher.viewPreviewContents() return false;" onclick="nclk_v2(event, 'lst.view', '11682082','{=volumeNo}'); return false;">
+                                    {elseif saleYn == 'Y'}
+                                        <a href="#" class="BookStoreAppLauncher.viewVolume(,{=productTypeCode},{=productLevel},{=upperOriginalProductId},{=originalProductId},{js escape(=productName)},false)" onclick="preventDefault(); nclk_v2(event, 'lst.view', '11682082','{=volumeNo}'); return false;">
+                                    {elseif lendingYn == 'Y'}
+                                        <a href="#" class="BookStoreAppLauncher.viewVolume(,{=productTypeCode},{=productLevel},{=upperOriginalProductId},{=originalProductId},{js escape(=productName)},false)" onclick="preventDefault(); nclk_v2(event, 'lst.view', '11682082','{=volumeNo}'); return false;">
+                                    {elseif lendingFree || saleFree}
+                                        <a href="#" id="ticket{=productNo}" onclick="nclk_v2(event, 'lst.view', '11682082','{=volumeNo}')" class=" cookie freeVolumn
+                                                        _orderFreeTicketProduct({=productTypeCode},{=productNo},{=upperOriginalProductId},{=volumeNo})
+                                                        _lanuchVolumnViewerAfterAction(,{=productTypeCode},{=productLevel},{=upperOriginalProductId},{=originalProductId},{js escape(=productName)},false)">
+                                    {else}
+                                        <a href="#" id="ticket{=productNo}" onclick="nclk_v2(event, 'lst.view', '11682082','{=volumeNo}')" prodName="&#44221;&#51228;&#50773; &#50672;&#49328;&#44400;" volumnNameText="{=volumnNameText}" class="btn btn_buy3 cookie
+                                                        _orderTicketProduct({=productTypeCode},{=productNo},{=upperOriginalProductId},{=volumeNo})
+                                                        _lanuchVolumnViewerAfterAction(,{=productTypeCode},{=productLevel},{=upperOriginalProductId},{=originalProductId},{js escape(=productName)},false)">
+                                    {/if}
+                                
+                            
+                            <div class="num {if newVolume}v2{/if}">
+                                {if volumeName != null && volumeName != ''}<em>{=volumeName}</em>{else}<em>{=volumeNo}화</em>{/if}
+                                {if subProductName != null && subProductName != ''}<span class="book_sub_tit">{=subProductName}</span>{/if}
+                            </div>
+                            <div class="content_episode">
+                                <em class="date">{js util.formatDate(=lastVolumeUpdateDate, 'Y.m.d.')}</em>
+                            </div>
+                            {if rightAdditionalInfo != '' || false || (limitLatestVolume && hasLimitedFreeTicket)}
+                                <div class="list_detail_box">
+                                    {if rightAdditionalInfo != ''}
+                                        <span class="detail_list">{=rightAdditionalInfo}</span>
+                                    {/if}
+                                    {if false}
+                                        <span class="detail_list">
+                                            {if lendPassCount != ''}<span>대여 {=lendPassCount}쿠키</span>{/if}
+                                            {if buyPassCount != ''}<span>소장 {=buyPassCount}쿠키</span>{/if}
+                                        </span>
+                                    {/if}
+                                    {if limitLatestVolume && hasLimitedFreeTicket}
+                                        <span class="detail_list">이용권 사용 제한</span>
+                                    {/if}
+                                </div>
+                            {/if}
+                            
+                            
+                            <div>
+                                {if lendingYn == 'Y' || saleYn == 'Y'}
+                                    {if lendingFree || saleFree}
+                                        <strong class="content_price ">무료</strong>
+                                    {else}
+                                        <strong class="content_price ">보기</strong>
+                                    {/if}
+                                {elseif lendingFree || saleFree}
+                                <strong class="content_price " onclick="handleClick()">무료</strong>
+                                {else}
+                                <strong class="content_price " onclick="handleClick()">보기</strong>
+                                {/if}
+                            </div>
+                            </a>
+					    </div>
+                    </li>
+                </script>
+
+                <!-- 대여/구매 -->
+                <div class="rental_list v2 _rentalListArea" style="display:block">
+                    <ul id="volumeList">
+                        <li style="display: none;"></li>
+                    </ul>
+
+                    <div id="tMoreContent" onClick="nclk_v2(event, 'lst.more')" class="area_end_more_detail" style="display:block">
+                        <div class="area_text_box">
+                            <a href="#" class="area_text_box_inner" onclick="nclk_v2(event, 'lst.more', '11682082');"><span class="this_text">25개 더보기</span></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="more_content">
+
+            
+            

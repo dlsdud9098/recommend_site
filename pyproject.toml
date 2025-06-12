@@ -1,0 +1,16 @@
+[project]
+name = "recommend-site"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11.11"
+dependencies = [
+    "bs4>=0.0.2",
+    "fake-agent>=0.1.4",
+    "fake-useragent>=2.2.0",
+    "ipykernel>=6.29.5",
+    "pandas>=2.3.0",
+    "playwright>=1.52.0",
+    "requests>=2.32.3",
+    "tqdm>=4.67.1",
+]
