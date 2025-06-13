@@ -81,11 +81,7 @@ async def get_links(playwright, url):
 # 태그 확인
 async def extrac_xpath(page, xpaths, type='text'):
     for xpath in xpaths:
-        try:
-            # 빈 XPath 체크
-            if not xpath or xpath.strip() == '' or xpath == 'xpath=':
-                continue
-                
+        try:                
             element = page.locator(xpath)
             if await element.count() > 0:
                 if type == 'text':
@@ -96,6 +92,7 @@ async def extrac_xpath(page, xpaths, type='text'):
                 if data and data.strip():
                     return data.strip()
         except Exception as e:
+            print(e)
             continue
     return ''
 
@@ -131,124 +128,131 @@ async def create_page(playwright, user_agent):
         print(f'에러: {e}')
 
 async def get_data(playwright=None, page=None, url=None, user_agent=None, age='all'):
-    if age == 'all':
-        page, browser = await create_page(playwright, user_agent)
+    try:
+        if age == 'all':
+            page, browser = await create_page(playwright, user_agent)
 
-    response = await page.goto(url, timeout=30000)
-
-
-    if response.status >= 400:
-        return {'url': url, 'status': f'HTTP_{response.status}', 'error': 'HTTP Error'}
-    
-    # 페이지 로딩 대기
-    await asyncio.sleep(2)
-    
-    # 이미지
-    img_xpaths = [
-        'xpath=/html/body/div[1]/div[2]/div[1]/span/img',
-        'xpath=//*[@id="container"]/div[1]/a/img',
-        'xpath=//*[@id="container"]/div[1]/span/img',
-        'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[1]/a/img'
-    ]
-    img = await extrac_xpath(page, img_xpaths, type='src')
-
-    # 제목
-    title_xpaths = [
-        'xpath=//*[@id="content"]/div[1]/h2',
-        'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/strong'
-    ]
-    title = await extrac_xpath(page, title_xpaths)        
-
-    # 평점
-    rating_xpaths = [
-        'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[1]/ul/li/span/span',
-        'xpath=//*[@id="content"]/div[1]/div[1]/em'
-    ]
-    rating = await extrac_xpath(page, rating_xpaths)
-
-    # 장르
-    genre_xpaths = [
-        'xpath=//*[@id="content"]/ul[1]/li/ul/li[2]/span/a',
-        'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[1]/dl/dd[2]'
-    ]
-    genre = await extrac_xpath(page, genre_xpaths)
-
-    # 연재상태
-    serial_xpaths = [
-        'xpath=//*[@id="content"]/ul[1]/li/ul/li[1]/span',
-        'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[1]/dl/dd[1]'
-    ]
-    serial = await extrac_xpath(page, serial_xpaths)
-
-    # 출판사
-    publisher_xpaths = [
-        'xpath=//*[@id="content"]/ul[1]/li/ul/li[4]/a'
-    ]
-    publisher = await extrac_xpath(page, publisher_xpaths)
-
-    # 소설 설명글
-    summary_xpaths = [
-        'xpath=//*[@id="content"]/div[2]'
-    ]
-
-    if await page.locator('xpath=//*[@id="content"]/div[2]/div[1]/span/a').count() > 0:
-        await page.locator('xpath=//*[@id="content"]/div[2]/div[1]/span/a').click()
-
-    summary = await extrac_xpath(page, summary_xpaths)
-
-    # 총 화수
-    page_count_xpaths = [
-        'xpath=//*[@id="content"]/h5/strong'
-    ]
-    page_count = await extrac_xpath(page, page_count_xpaths)
-
-    # 단위(화, 권)
-    page_unit_xpaths = [
-        'xpath=//*[@id="content"]/h5'
-    ]
-    page_unit = await extrac_xpath(page, page_unit_xpaths)
-    page_unit = page_unit.strip()[-1]
-
-    age_xpaths = [
-        'xpath=//*[@id="content"]/ul[1]/li/ul/li[5]'
-    ]
-    age = await extrac_xpath(page, age_xpaths)
-
-    author = await extrac_xpath(page, 'xpath=//*[@id="content"]/ul[1]/li/ul/li[3]/a')
-    
-    novel_data = {
-        'url': url,
-        'img': img,
-        'title': title,
-        'athor': author,
-        'rating': rating,
-        'genre': genre,
-        'serial': serial,
-        'publisher': publisher,
-        'summary': summary,
-        'page_count': page_count,
-        'page_unit': page_unit,
-        'age': age,
-        'platform': 'naver'
-    }
+        response = await page.goto(url, timeout=30000)
 
 
-    # 디버깅 정보
-    if not all([title, rating, genre, serial, publisher, summary, page_count, page_unit, age]):
-        print(f"데이터 누락: {page.url}")
-        data_fields = ['img', 'title', 'rating', 'genre', 'serial', 'publisher', 'summary', 'page_count', 'page_unit', 'age']
-        filled_fields = sum(1 for field in data_fields if novel_data.get(field) and novel_data[field] != '')
-        print(f"수집된 필드: {filled_fields}/{len(data_fields)}개")
-    
-    await asyncio.sleep(random.uniform(1, 2))
+        if response.status >= 400:
+            return {'url': url, 'status': f'HTTP_{response.status}', 'error': 'HTTP Error'}
+        
+        # 페이지 로딩 대기
+        await asyncio.sleep(2)
+        
+        # 이미지
+        img_xpaths = [
+            'xpath=/html/body/div[1]/div[2]/div[1]/span/img',
+            'xpath=//*[@id="container"]/div[1]/a/img',
+            'xpath=//*[@id="container"]/div[1]/span/img',
+            'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[1]/a/img'
+        ]
+        img = await extrac_xpath(page, img_xpaths, type='src')
 
-    if browser:
+        # 제목
+        title_xpaths = [
+            'xpath=//*[@id="content"]/div[1]/h2',
+            'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/strong',
+            'xpath=//*[@id="content"]/div[2]',
+            'xpath=//*[@id="content"]/div[2]/h2'
+        ]
+        title = await extrac_xpath(page, title_xpaths)        
+
+        # 평점
+        rating_xpaths = [
+            'xpath=//*[@id="content"]/div[2]/div[1]',
+            'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[1]/ul/li/span/span',
+            'xpath=//*[@id="content"]/div[1]/div[1]/em',
+        ]
+        rating = await extrac_xpath(page, rating_xpaths)
+
+        # 장르
+        genre_xpaths = [
+            'xpath=//*[@id="content"]/ul[1]/li/ul/li[2]/span/a',
+            'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[1]/dl/dd[2]'
+        ]
+        genre = await extrac_xpath(page, genre_xpaths)
+
+        # 연재상태
+        serial_xpaths = [
+            'xpath=//*[@id="content"]/ul[1]/li/ul/li[1]/span',
+            'xpath=//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[1]/dl/dd[1]'
+        ]
+        serial = await extrac_xpath(page, serial_xpaths)
+
+        # 출판사
+        publisher_xpaths = [
+            'xpath=//*[@id="content"]/ul[1]/li/ul/li[4]/a'
+        ]
+        publisher = await extrac_xpath(page, publisher_xpaths)
+        author = await extrac_xpath(page, 'xpath=//*[@id="content"]/ul[1]/li/ul/li[3]/a')
+
+        # 소설 설명글
+        summary_xpaths = [
+            'xpath=//*[@id="content"]/div[2]'
+        ]
+
+        if await page.locator('xpath=//*[@id="content"]/div[2]/div[1]/span/a').count() > 0:
+            await page.locator('xpath=//*[@id="content"]/div[2]/div[1]/span/a').click()
+
+        summary = await extrac_xpath(page, summary_xpaths)
+
+        # 총 화수
+        page_count_xpaths = [
+            'xpath=//*[@id="content"]/h5/strong'
+        ]
+        page_count = await extrac_xpath(page, page_count_xpaths)
+
+        # 단위(화, 권)
+        page_unit_xpaths = [
+            '.end_total_episode'
+        ]
+        page_unit = await extrac_xpath(page, page_unit_xpaths)
         try:
-            await browser.close()
+            page_unit = page_unit.strip()[-1]
         except:
-            pass
+            print(page_unit)
+            
 
-    return novel_data
+        age_xpaths = [
+            'xpath=//*[@id="content"]/ul[1]/li/ul/li[5]'
+        ]
+        age = await extrac_xpath(page, age_xpaths)
+
+        
+        novel_data = {
+            'url': url,
+            'img': img,
+            'title': title,
+            'author': author,
+            'rating': rating,
+            'genre': genre,
+            'serial': serial,
+            'publisher': publisher,
+            'summary': summary,
+            'page_count': page_count,
+            'page_unit': page_unit,
+            'age': age,
+            'platform': 'naver'
+        }
+
+
+        # 디버깅 정보
+        if not all([title, rating, genre, serial, publisher, summary, page_count, page_unit, age]):
+            print(f"데이터 누락: {page.url}")
+            print(novel_data)
+        
+
+        if browser:
+            try:
+                await browser.close()
+            except:
+                pass
+
+        return novel_data
+    except Exception as e:
+        print(url, e)
 
 # 파일 저장하기
 async def save_data(results):
@@ -290,6 +294,7 @@ async def main():
             all_urls = pickle.load(f)
         
         all_urls = list(chain.from_iterable(all_urls))
+        len(all_urls)
 
     else:
         print("🔍 링크 수집 시작...")
@@ -317,7 +322,7 @@ async def main():
                     unit="페이지",
                     # return_exceptions=True
                 )
-                all_links.append(batch_results)
+                all_links.extend(batch_results)
 
         # 하나로 합치기
         all_urls = list(chain.from_iterable(all_links))
@@ -357,6 +362,7 @@ async def main():
                 # return_exceptions=True
             )
             all_results.append(batch_results)
+            await asyncio.sleep(random.uniform(1, 2))
     
     nineteen_links = split_data(nineteen_links, 5)
     # 19세 이용가 소설

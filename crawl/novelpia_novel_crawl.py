@@ -117,6 +117,16 @@ async def save_data(results):
     
     print(f'📁 전체 데이터 저장: {filename} ({len(results)}개)')
 
+async def extract_element(page, xpaths, type='text'):
+    # 추천 수
+    for xpath in xpaths:
+        if await page.locator(xpath).count() > 0:
+            if type == 'img':
+                img = await page.locator(xpath).get_attribute('src')
+                return img
+            data = await page.locator(xpath).inner_text()
+            return data
+
 async def get_data(playwright, url, user_agent):
     """단일 페이지에서 소설 데이터 수집"""
     browser = None
@@ -142,55 +152,90 @@ async def get_data(playwright, url, user_agent):
             viewport={'width': 1920, 'height': 1080}
         )
         page = await context.new_page()
-        
-        # 네이버 쿠키 설정 (데스크톱 모드)
-        await context.add_cookies([
-            {'name': 'nsr_acl', 'value': 'off', 'domain': '.naver.com', 'path': '/'}
-        ])
 
-        await page.goto(url)
-        await page.wait_for_load_state('networkidle')        
+        while True:
+            response = await page.goto(url)
+            if response.status != 200:
+                print('페이지 새로고침')
+                os.system('nordvpn connect South_Korea')
+                await asyncio.sleep(10)
+                response = await page.goto(url, timeout=30000)
+            else:
+                break
+        # await page.wait_for_load_state('networkidle')
         
         # 요소들이 로드될 때까지 대기
-        await page.wait_for_selector('xpath=/html/body/div[6]/div[1]/div[1]/a/img', timeout=30000)
+        # await page.wait_for_selector('.epnew-novel-title', timeout=15000)
         
-        img = await page.locator('xpath=/html/body/div[6]/div[1]/div[1]/a/img').get_attribute('src')
-        title = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[2]').inner_text()
-        author = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[3]/p[1]/a').inner_text()
-        recommend = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[2]/span[2]').inner_text()
-        keywords = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[1]/p[1]').inner_text()
-
-        if '로맨스' in keywords:
-            genre = '로맨스'
-        elif '무협' in keywords:
-            genre = '무협'
-        elif '라이트노벨' in keywords:
-            genre = '라이트노벨'
-        elif '공포' in keywords:
-            genre = '공포'
-        elif 'SF' in keywords:
-            genre = 'SF'
-        elif '스포츠' in keywords:
-            genre = '스포츠'
-        elif '대체역사' in keywords:
-            genre = '대체역사'
-        elif '현대판타지' in keywords:
-            genre = '현대판타지'
-        elif '현대' in keywords:
-            genre = '현대'
-        elif '판타지' in keywords:
-            genre = '판타지'
-        else:
-            genre = '기타'
+        img_xpaths = [
+            'xpath=/html/body/div[6]/div[1]/div[1]/a/img',
+            'xpath=/html/body/div[6]/div[1]/div[1]/img',
+            '.conver_img',
+            'body > div:nth-child(18) > div.epnew-wrapper.s_inv.side_padding > div.epnew-cover-box > a > img'
+            # 'img.s_inv:nth-child(5)'
+        ]   
+        img = await extract_element(page, img_xpaths, type='img')
+        title_xpaths = [
+            'div.epnew-novel-title',
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[2]'
+        ]
+        # title = await page.locator('.ep-info-line.epnew-novel-title').inner_text()
+        title = await extract_element(page, title_xpaths)
         
-        serial_element = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[3]/p[2]').inner_text()
+        author_xpaths = [
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[3]/p[1]/a',
+            'div.writer-name'
+        ]
+        author = await extract_element(page, author_xpaths)
+        # author = await page.locator('.writer-name').inner_text()
+        
+        recommend_xpaths = [
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[4]/div[1]/p[2]/span[2]',
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[2]/span[2]'
+        ]
+        
+        # 추천 수
+        recommend = await extract_element(page, recommend_xpaths)
+        # recommend = await page.locator('.counter-line-a p:last-child span:last-child').inner_text()
+        keywords_xpaths = [
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[1]/p[1]',
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[1]',
+            '.writer-tag:nth-child(2)'
+        ]
+        keywords = await extract_element(page, keywords_xpaths)
+        # keywords = await page.locator('p.writer-tag').first.inner_text()
+        keywords_items = {
+            '로맨스': '로맨스',
+            '무협': '무협',
+            '라이트노벨':'라이트노벨',
+            '공포':'공포',
+            'SF':'SF',
+            '스포츠':'스포츠',
+            '대체역사':'대체역사',
+            '현대판타지':'현대판타지',
+            '현대':'현대',
+            '판타지':'판타지'
+        }
+        genre = None
+        for key, value in keywords_items.items():
+            if key in keywords:
+                genre = value
+                break
+        
+        serial_element = await page.locator('.in-badge').inner_text()
+        # serial_element = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[3]/p[2]').inner_text()
         if '완결' in serial_element:
             serial = '완결'
         else:
             serial = '연재중'
         
         publisher = ''
-        page_count = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[1]/p[3]/span[2]').inner_text()
+        page_count_xpaths = [
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[1]/p[3]/span[2]',
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[2]/div[1]/p[3]/span[2]',
+        ]
+        # page_count = await extract_element(page, page_count_xpaths)
+        page_count = await page.locator('.writer-name').last.inner_text()
         page_unit = '화'
         
         if '19' in serial_element:
@@ -198,8 +243,18 @@ async def get_data(playwright, url, user_agent):
         else:
             age = '전체'
 
-        viewers = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[4]/div[1]/p[1]/span[2]').inner_text()
-        summary = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[2]').inner_text()
+        viewers_xpaths = [
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[4]/div[1]/p[1]/span[2]',
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[1]/span[2]'
+        ]
+        # viewers = await extract_element(page, viewers_xpaths)
+        viewers = await page.locator('.counter-line-a p:first-child span:last-child').inner_text()
+        summary_xpaths = [
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[2]/div[2]',
+            'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[2]'
+        ]
+        # summary = await extract_element(page, summary_xpaths)
+        summary = await page.locator('.synopsis').first.inner_text()
         
         novel_data = {
             'url': url,
@@ -219,12 +274,18 @@ async def get_data(playwright, url, user_agent):
             'viewers': viewers
         }
         
+        if any(value is None for value in novel_data.values()):
+            print(novel_data)
+        
         # 랜덤 대기 시간
-        await asyncio.sleep(random.uniform(1,2))
+        await asyncio.sleep(random.uniform(10,30))
         return novel_data
         
     except Exception as e:
         print(f"[ERROR] {url}: {e}")
+        page_source = await page.content()
+        with open('page.html', 'w') as f:
+            f.write(page_source)
         return None
 
 async def main():
@@ -304,7 +365,7 @@ async def main():
             finally:
                 await browser.close()
 
-    all_links = all_links[:5]
+    # all_links = all_links[:10]
     all_links = split_data(all_links, 5)
 
     all_results = []
@@ -320,7 +381,7 @@ async def main():
                 unit="페이지",
                 # return_exceptions=True
             )
-            all_results.append(batch_results)
+            all_results.extend(batch_results)
 
     # 데이터 저장
     if all_results:
