@@ -7,8 +7,8 @@ import os
 from fake_useragent import UserAgent
 from tqdm import tqdm
 from tqdm.asyncio import tqdm_asyncio
-from datetime import datetime
 import pickle
+import time
 
 # 데이터 나누기
 def split_data(data, split_num):
@@ -58,17 +58,14 @@ async def get_links(playwright, url):
             page_title = await page_tag.inner_text()
             link = 'https://series.naver.com' + await page_tag.locator('xpath=//a[contains(@href, "/novel/detail")]').get_attribute('href')
             if '19금' in page_title:    
-                # links[(page_title, '19금')] = link
-                links.append({
-                    'age': '19',
-                    'url': link
-                })
+                age = 19
             else:
-                links.append({
-                    'age': '전체',
-                    'url': link
-                })
-        
+                age = 0
+            links.append({
+                'url': link,
+                'age': age,
+            })
+            
         await asyncio.sleep(random.randint(1, 2))
         return links
     
@@ -77,6 +74,15 @@ async def get_links(playwright, url):
         return []
     finally:
         await browser.close()
+
+async def get_last_page(page):
+    await page.goto('https://series.naver.com/novel/categoryProductList.series?categoryTypeCode=all&page=100000')
+    page_elements = await page.locator('xpath=//*[@id="content"]/p/a').all()
+    page_list = []
+    for element in page_elements:
+        page_list.append(await element.inner_text())
+    max_page_num = max(page_list)
+    return max_page_num
 
 # 태그 확인
 async def extrac_xpath(page, xpaths, type='text'):
@@ -129,17 +135,26 @@ async def create_page(playwright, user_agent):
 
 async def get_data(playwright=None, page=None, url=None, user_agent=None, age='all'):
     try:
-        if age == 'all':
+        if age == 0:
+            page, browser = await create_page(playwright, user_agent)
+        else:
             page, browser = await create_page(playwright, user_agent)
 
-        response = await page.goto(url, timeout=30000)
-
-
-        if response.status >= 400:
-            return {'url': url, 'status': f'HTTP_{response.status}', 'error': 'HTTP Error'}
-        
+        error_page_count = 0
+        response_max_error_count = 3
+        while True:
+            if error_page_count == response_max_error_count:
+                raise Exception(f'페이지 새로고침 {response_max_error_count}번 실패했습니다.')
+            if response.status != 200:
+                error_page_count += 1
+                
+                os.system('nordvpn connect South_Korea')
+                await asyncio.sleep(120)
+                response = await page.goto(url, timeout=50000)
+            else:
+                break
         # 페이지 로딩 대기
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
         
         # 이미지
         img_xpaths = [
@@ -242,6 +257,7 @@ async def get_data(playwright=None, page=None, url=None, user_agent=None, age='a
         if not all([title, rating, genre, serial, publisher, summary, page_count, page_unit, age]):
             print(f"데이터 누락: {page.url}")
             print(novel_data)
+            raise Exception('데이터 누락 발생')
         
 
         if browser:
@@ -254,24 +270,6 @@ async def get_data(playwright=None, page=None, url=None, user_agent=None, age='a
     except Exception as e:
         print(url, e)
 
-# 파일 저장하기
-async def save_data(results):
-    """결과 저장 함수"""
-    if not results:
-        print("저장할 데이터가 없습니다.")
-        return
-    
-    # 데이터 디렉토리 생성
-    os.makedirs('data', exist_ok=True)
-    
-    # 전체 결과 저장
-    df = pd.DataFrame(results)
-    filename = f'data/naver_novel_data.csv'
-    df.to_csv(filename, encoding='utf-8', index=False)
-    
-    
-    print(f'📁 전체 데이터 저장: {filename} ({len(results)}개)')
-
 # 로그인하기
 async def login(page):
     """로그인 처리"""
@@ -280,146 +278,107 @@ async def login(page):
     print("로그인을 완료한 후 Enter를 눌러주세요...")
     input()  # 사용자가 수동으로 로그인 완료할 때까지 대기
 
+# 데이터 불러오기
+async def open_files(path):
+    with open(path, 'rb') as f:
+        links = pickle.load(f)
+    return links
+
+# 데이터 저장하기
+async def save_files(path, data):
+    with open(path, 'wb') as f:
+        pickle.dump(data, f)
 
 async def main():
     print("🚀 네이버 소설 크롤링 시작!")
     
     # 데이터 디렉토리 생성
     os.makedirs('data', exist_ok=True)
-    
-    # 이미 준비되어있는 url이 있는지 확인
-    if os.path.exists('data/naver_novel_page_link_data.data'):
-        print("📂 기존 링크 파일 로드 중...")
-        with open('data/naver_novel_page_link_data.data', 'rb') as f:
-            all_urls = pickle.load(f)
-        
-        all_urls = list(chain.from_iterable(all_urls))
-        len(all_urls)
 
-    else:
-        print("🔍 링크 수집 시작...")
-        page_urls = []
-        for i in range(1, 4232):  # 테스트용으로 5페이지만
-            page_urls.append(f'https://series.naver.com/novel/categoryProductList.series?categoryTypeCode=all&page={i}')
-        
-
-        # page_urls = page_urls[:20]
-        # print(len(page_urls))
-        urls = split_data(page_urls, 5)
-
-        ua = UserAgent(platforms='desktop')
-        print(f"📄 {len(page_urls)}개 페이지에서 링크 수집 중...")
-        all_links = []
-        async with async_playwright() as playwright:
-            # 링크 수집 진행상황 표시
-            for url_list in tqdm(urls, desc="📄 페이지별 링크 수집", unit="배치"):
-                tasks = [get_links(playwright, url) for url in url_list]
-                
-                # tqdm_asyncio로 각 배치 내 태스크 진행상황 표시
-                batch_results = await tqdm_asyncio.gather(
-                    *tasks, 
-                    desc=f"URL 처리 ({len(url_list)}개)", 
-                    unit="페이지",
-                    # return_exceptions=True
-                )
-                all_links.extend(batch_results)
-
-        # 하나로 합치기
-        all_urls = list(chain.from_iterable(all_links))
-        print(all_urls)
-        # 중복 제거 및 저장
-        # unique_links = list(set(all_links))
-        print(f"🔗 수집된 고유 링크: {len(all_urls)}개")
-
-        
-        with open('data/naver_novel_page_link_data.data', 'wb') as f:
-            pickle.dump(all_urls, f)
-
-    not_nineteen_links = [link['url'] for link in all_urls if link['age'] != 19]
-    nineteen_links = [link['url'] for link in all_urls if link['age'] != 19]
-
-    # 데이터 수집 시작
-    total_urls = sum(len(url_list) for url_list in all_urls)
-    print(f"\n📊 데이터 수집 시작 - 총 {total_urls}개 URL")
-    
-    all_results = []
-    # print(urls[0])
-    
+    novel_data_path = 'data/naver_novel_data.data'
+    novel_page_path = 'data/naver_page_links.link'
     ua = UserAgent(platforms='desktop')
     
-    not_nineteen_links = split_data(not_nineteen_links, 5)
-    # 전체 이용가 소설
+    # 이미 준비되어있는 url이 있는지 확인
+    if os.path.exists(novel_page_path):
+        all_urls = await open_files(novel_page_path)
+        all_urls = [url['url'] for url in all_urls]
+
+    all_urls = []
+
+    async with async_playwright() as playwright:
+        page, browser = await create_page(playwright, ua.random)
+        max_page_num = await get_last_page(page)
+
+        # max_page_num = '1'
+        for i in range(1, int(max_page_num.replace(',', '')) + 1):  # 테스트용으로 5페이지만
+            all_urls.append(f'https://series.naver.com/novel/categoryProductList.series?categoryTypeCode=all&page={i}')
+        await browser.close()
+
+    all_urls = all_urls[:5]
+    urls = split_data(all_urls, 5)
+    all_links = []
     async with async_playwright() as playwright:
         # 링크 수집 진행상황 표시
-        for url_list in tqdm(not_nineteen_links, desc="📄 페이지별 링크 수집", unit="배치"):
-            tasks = [get_data(playwright=playwright, url=url, user_agent=ua.random) for url in url_list]
+        for url_list in tqdm(urls, desc="📄 페이지별 링크 수집", unit="배치"):
+            tasks = [get_links(playwright, url) for url in url_list]
             
             # tqdm_asyncio로 각 배치 내 태스크 진행상황 표시
             batch_results = await tqdm_asyncio.gather(
                 *tasks, 
                 desc=f"URL 처리 ({len(url_list)}개)", 
                 unit="페이지",
-                # return_exceptions=True
             )
-            all_results.append(batch_results)
-            await asyncio.sleep(random.uniform(1, 2))
-    
-    nineteen_links = split_data(nineteen_links, 5)
-    # 19세 이용가 소설
-    async with async_playwright() as playwright:
-        # 단일 브라우저 및 페이지 생성
-        browser = await playwright.chromium.launch(
-            headless=False,
-            args=[
-                '--no-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-blink-features=AutomationControlled',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor',
-                '--no-first-run',
-                '--disable-extensions',
-                '--disable-default-apps',
-                '--disable-gpu'
-            ]
-        )
-        
-        context = await browser.new_context(
-            user_agent=ua.random,
-            is_mobile=False,
-            has_touch=False,
-            viewport={'width': 1920, 'height': 1080}
-        )
-        
-        page = await context.new_page()
+            all_links.extend(batch_results)
 
+    # 하나로 합치기
+    all_urls = list(chain.from_iterable(all_links))
+    await save_files(novel_page_path, all_urls)
+        
+
+    ua = UserAgent(platforms='desktop')
+    while True:
+        # 기존에 크롤링 했던 데이터 목록과 비교해서 없는 url만 가져오기
+        if os.path.exists(novel_data_path):
+            old_urls = await open_files(novel_data_path)
+            old_urls = [url['url'] for url in old_urls]
+
+            all_urls = [url for url in all_urls if url['url'] not in old_urls]
+
+        # 나이별 분류
+        not_nineteen_links = [link for link in all_urls if link['age'] == 0]
+        nineteen_links = [link for link in all_urls if link['age'] == 19]
+
+        not_nineteen_links = split_data(not_nineteen_links, 5)
+        all_results = []
+        # 전체 이용가 소설 데이터 수집
         try:
-            # 로그인 처리
-            await login(page)
-
-            # 각 페이지에서 순차적으로 링크 수집
-            all_links = []
-            print(len(nineteen_links))
-            for url in tqdm(nineteen_links, desc="📄 페이지별 링크 수집"):
-                links = await get_links(playwright=None, page=page, url=url)
-                all_links.extend(links)
-                print(f"수집된 링크 수: {len(links)}")
-            
+            async with async_playwright() as playwright:
+                for url_list in tqdm(not_nineteen_links, desc="📄 페이지별 링크 수집", unit="배치"):
+                    tasks = [get_data(playwright=playwright, url=url['url'], user_agent=ua.random, age = url['age']) for url in url_list]
+                    
+                    # tqdm_asyncio로 각 배치 내 태스크 진행상황 표시
+                    batch_results = await tqdm_asyncio.gather(
+                        *tasks, 
+                        desc=f"URL 처리 ({len(url_list)}개)", 
+                        unit="페이지",
+                    )
+                    all_results.append(batch_results)
+                    await asyncio.sleep(random.uniform(1, 2))
+            if all_results:
+                print('데이터 저장')
+                all_results = list(chain.from_iterable(all_links))
+                await save_files(novel_data_path, all_results)
+                break
         except Exception as e:
-            print(f"❌ 메인 실행 중 에러: {e}")
-            import traceback
-            traceback.print_exc()
-        
-        finally:
-            await browser.close()
-    
-    all_results = list(chain.from_iterable(all_links))
-    
-    # 데이터 저장
-    print(f"\n💾 데이터 저장 중...")
-    await save_data(all_results)
-    
-    return all_results
+            print('데이터 추출 오류')
+            print(e)
+            print('현재 상황을 저장합니다.')
 
+            old_data = await open_files(novel_data_path)
+            old_data.extend(all_results)
+            await save_files(novel_data_path, old_data)
+        
 if __name__ == "__main__":
     try:
         results = asyncio.run(main())

@@ -7,37 +7,53 @@ from fake_useragent import UserAgent
 from tqdm import tqdm
 import pickle
 from tqdm.asyncio import tqdm_asyncio
-from fake_useragent import UserAgent
+import traceback
+from Crawl_Exception import PageRefreshException, DataExtractionException
 
-# 데이터 나누기
-def split_data(data, split_num):
-    """리스트와 딕셔너리 모두 처리하는 범용 분할 함수"""
+
+# 새 페이지 만들기
+async def create_page(playwright, user_agent):
+    browser = await playwright.chromium.launch(
+        headless=True,
+        args=[
+            '--no-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-blink-features=AutomationControlled',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--no-first-run',
+            '--disable-extensions',
+            '--disable-default-apps',
+            '--disable-gpu'
+        ]
+    )
+    context = await browser.new_context(
+        user_agent=user_agent,
+        is_mobile=False,
+        has_touch=False,
+        viewport={'width': 1920, 'height': 1080}
+    )
+    page = await context.new_page()
     
-    if isinstance(data, list):
-        # 리스트인 경우 (기존 로직)
-        new_data = []
-        for i in range(0, len(data), split_num):
-            new_data.append(data[i: i+split_num])
-        return new_data
+    return page, browser
+
+# 로그인하기
+async def login(page):
+    """로그인 처리"""
+    await page.goto('https://novelpia.com/')
+    # await page.goto('https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=A8OQVi3byB1jFOckQ0RZ&redirect_uri=https%3A%2F%2Fnovelpia.com%2Fproc%2Flogin_naver%3Fredirectrurl%3D&state=e52d643d7eca539840bb97c0f697b16c')
+
+    await page.locator('xpath=//*[@id="toggle-menu"]/div/img').click()
+    await page.locator('xpath=//*[@id="pc-sidemenu"]/div[2]/div[1]/div[2]/div[1]').click()
+    await page.locator('xpath=//*[@id="member_login_modal"]/div/div/div[2]/div[2]/div[2]/a[1]').click()
     
-    elif isinstance(data, dict):
-        # 딕셔너리인 경우
-        items = list(data.items())  # (key, value) 튜플들의 리스트
-        new_data = []
-        
-        for i in range(0, len(items), split_num):
-            batch_items = items[i: i+split_num]
-            batch_dict = dict(batch_items)  # 다시 딕셔너리로 변환
-            new_data.append(batch_dict)
-        
-        return new_data
-    
-    else:
-        raise TypeError(f"지원하지 않는 타입입니다: {type(data)}")
+    print("로그인을 완료한 후 Enter를 눌러주세요...")
+    input()  # 사용자가 수동으로 로그인 완료할 때까지 대기
 
 # 최대 페이지 가져오기
 async def get_last_page(page, url):
     """가장 기본적인 단일 페이지 크롤링 - 페이지 재사용"""
+    # 페이지 열기
     try:
         # 페이지 방문
         await page.goto(url)
@@ -57,347 +73,333 @@ async def get_last_page(page, url):
 
         temp = [int(i) for i in temp if i]
         max_num = max(temp)
+        print(f'마지막 번호: {max_num}')
         return max_num
         
     except Exception as e:
         print(f"최대 페이지 수집 에러: {e}")
-        return 1
+        return 1   
 
-# 링크 가져오기
+# 데이터 불러오기
+async def open_files(file):
+    with open(file, 'rb') as f:
+        cache_data = pickle.load(f)
+        
+    return cache_data
+
+# 데이터 저장하기
+async def save_files(file, data):
+    with open(file, 'wb') as f:
+        pickle.dump(data, f)
+
+# 각 소설 링크들 가져오기
 async def get_links(page, url):
-    """단일 페이지에서 링크 수집"""
-    try:
-        await page.goto(url)
-        await page.wait_for_load_state('networkidle')
-
-        links = []
-        elements = await page.locator('xpath=/html/body/div[8]/div[3]/div[6]/div/table/tbody/tr[1]/td[1]').all()
-        
-        for element in elements:
-            onclick_value = await element.get_attribute('onclick')
-            # print(onclick_value)
-            if onclick_value:
-                # onclick="location='/novel/25974';" 에서 URL 부분 추출
-                if "location='" in onclick_value:
-                    url_part = onclick_value.split("location='")[1].split("'")[0]
-                    full_url = f"https://novelpia.com{url_part}"
-                    links.append(full_url)
-                    
-                    # 제목도 함께 추출
-                    title = await element.inner_text()
-                    # print(f"제목: {title}, URL: {full_url}")
-        
-        await asyncio.sleep(random.uniform(4, 15))
-        return links
-        
-    except Exception as e:
-        print(f"링크 수집 에러 {url}: {e}")
-        return []
-
-async def login(page):
-    """로그인 처리"""
-    await page.goto('https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=A8OQVi3byB1jFOckQ0RZ&redirect_uri=https%3A%2F%2Fnovelpia.com%2Fproc%2Flogin_naver%3Fredirectrurl%3D&state=e52d643d7eca539840bb97c0f697b16c')
+    await page.goto(url)
     
-    print("로그인을 완료한 후 Enter를 눌러주세요...")
-    input()  # 사용자가 수동으로 로그인 완료할 때까지 대기
+    links = []
+    elements = await page.locator('xpath=/html/body/div[8]/div[3]/div[6]/div/table/tbody/tr[1]/td[1]').all()
+    
+    for element in elements:
+        onclick_value = await element.get_attribute('onclick')
+        if onclick_value:
+            # url 추출
+            if "location='" in onclick_value:
+                url_part = onclick_value.split("location='")[1].split("'")[0]
+                full_url = f"https://novelpia.com{url_part}"
+                links.append(full_url)
+    
+    return links
 
-async def save_data(results):
-    """결과 저장 함수"""
-    if not results:
-        print("저장할 데이터가 없습니다.")
-        return
-    
-    # 데이터 디렉토리 생성
-    os.makedirs('data', exist_ok=True)
-    
-    # 전체 결과 저장
-    df = pd.DataFrame(results)
-    filename = f'data/novelpia_novel_data.csv'
-    df.to_csv(filename, encoding='utf-8', index=False)
-    
-    print(f'📁 전체 데이터 저장: {filename} ({len(results)}개)')
-
+# 요소 가져오기
 async def extract_element(page, xpaths, type='text'):
     # 추천 수
-    for xpath in xpaths:
-        if await page.locator(xpath).count() > 0:
-            if type == 'img':
-                img = await page.locator(xpath).get_attribute('src')
-                return img
-            data = await page.locator(xpath).inner_text()
-            return data
-
-async def get_data(playwright, url, user_agent):
-    """단일 페이지에서 소설 데이터 수집"""
-    browser = None
     try:
-        browser = await playwright.chromium.launch(
-            headless=True,
-            args=[
-                '--no-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-blink-features=AutomationControlled',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor',
-                '--no-first-run',
-                '--disable-extensions',
-                '--disable-default-apps',
-                '--disable-gpu'
-            ]
-        )
-        context = await browser.new_context(
-            user_agent=user_agent,
-            is_mobile=False,
-            has_touch=False,
-            viewport={'width': 1920, 'height': 1080}
-        )
-        page = await context.new_page()
-
-        while True:
-            response = await page.goto(url)
-            if response.status != 200:
-                print('페이지 새로고침')
-                os.system('nordvpn connect South_Korea')
-                await asyncio.sleep(10)
-                response = await page.goto(url, timeout=30000)
-            else:
-                break
-        # await page.wait_for_load_state('networkidle')
-        
-        # 요소들이 로드될 때까지 대기
-        # await page.wait_for_selector('.epnew-novel-title', timeout=15000)
-        
-        img_xpaths = [
-            'xpath=/html/body/div[6]/div[1]/div[1]/a/img',
-            'xpath=/html/body/div[6]/div[1]/div[1]/img',
-            '.conver_img',
-            'body > div:nth-child(18) > div.epnew-wrapper.s_inv.side_padding > div.epnew-cover-box > a > img'
-            # 'img.s_inv:nth-child(5)'
-        ]   
-        img = await extract_element(page, img_xpaths, type='img')
-        title_xpaths = [
-            'div.epnew-novel-title',
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[2]'
-        ]
-        # title = await page.locator('.ep-info-line.epnew-novel-title').inner_text()
-        title = await extract_element(page, title_xpaths)
-        
-        author_xpaths = [
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[3]/p[1]/a',
-            'div.writer-name'
-        ]
-        author = await extract_element(page, author_xpaths)
-        # author = await page.locator('.writer-name').inner_text()
-        
-        recommend_xpaths = [
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[4]/div[1]/p[2]/span[2]',
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[2]/span[2]'
-        ]
-        
-        # 추천 수
-        recommend = await extract_element(page, recommend_xpaths)
-        # recommend = await page.locator('.counter-line-a p:last-child span:last-child').inner_text()
-        keywords_xpaths = [
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[1]/p[1]',
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[1]',
-            '.writer-tag:nth-child(2)'
-        ]
-        keywords = await extract_element(page, keywords_xpaths)
-        # keywords = await page.locator('p.writer-tag').first.inner_text()
-        keywords_items = {
-            '로맨스': '로맨스',
-            '무협': '무협',
-            '라이트노벨':'라이트노벨',
-            '공포':'공포',
-            'SF':'SF',
-            '스포츠':'스포츠',
-            '대체역사':'대체역사',
-            '현대판타지':'현대판타지',
-            '현대':'현대',
-            '판타지':'판타지'
-        }
-        genre = None
-        for key, value in keywords_items.items():
-            if key in keywords:
-                genre = value
-                break
-        
-        serial_element = await page.locator('.in-badge').inner_text()
-        # serial_element = await page.locator('xpath=/html/body/div[6]/div[1]/div[2]/div[3]/p[2]').inner_text()
-        if '완결' in serial_element:
-            serial = '완결'
-        else:
-            serial = '연재중'
-        
-        publisher = ''
-        page_count_xpaths = [
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[1]/p[3]/span[2]',
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[2]/div[1]/p[3]/span[2]',
-        ]
-        # page_count = await extract_element(page, page_count_xpaths)
-        page_count = await page.locator('.writer-name').last.inner_text()
-        page_unit = '화'
-        
-        if '19' in serial_element:
-            age = '19'
-        else:
-            age = '전체'
-
-        viewers_xpaths = [
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[4]/div[1]/p[1]/span[2]',
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[1]/span[2]'
-        ]
-        # viewers = await extract_element(page, viewers_xpaths)
-        viewers = await page.locator('.counter-line-a p:first-child span:last-child').inner_text()
-        summary_xpaths = [
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[2]/div[2]',
-            'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[2]'
-        ]
-        # summary = await extract_element(page, summary_xpaths)
-        summary = await page.locator('.synopsis').first.inner_text()
-        
-        novel_data = {
-            'url': url,
-            'img': img,
-            'title': title,
-            'author': author,
-            'recommend': recommend,
-            'genre': genre,
-            'serial': serial,
-            'publisher': publisher,
-            'summary': summary,
-            'page_count': page_count,
-            'page_unit': page_unit,
-            'age': age,
-            'platform': 'novelpia',
-            'keywords': keywords,
-            'viewers': viewers
-        }
-        
-        if any(value is None for value in novel_data.values()):
-            print(novel_data)
-        
-        # 랜덤 대기 시간
-        await asyncio.sleep(random.uniform(10,30))
-        return novel_data
-        
+        for xpath in xpaths:
+            if await page.locator(xpath).count() > 0:
+                if type == 'img':
+                    img = await page.locator(xpath).get_attribute('src')
+                    return img
+                data = await page.locator(xpath).inner_text()
+                return data
     except Exception as e:
-        print(f"[ERROR] {url}: {e}")
-        page_source = await page.content()
-        with open('page.html', 'w') as f:
-            f.write(page_source)
-        return None
+        print(xpath)
+        print(e)
 
-async def main():
-    print("🚀 노벨피아 소설 크롤링 시작!")
+# 이미지 가져오기
+async def get_img(page):
+    img_xpaths = [
+        'xpath=/html/body/div[6]/div[1]/div[1]/a/img',
+        'xpath=/html/body/div[6]/div[1]/div[1]/img',
+        '.conver_img',
+        'body > div:nth-child(18) > div.epnew-wrapper.s_inv.side_padding > div.epnew-cover-box > a > img'
+    ]
+    img = await extract_element(page, img_xpaths, 'img')
+
+    return img
+
+# 제목 가져오기
+async def get_title(page):
+    title_xpaths = [
+        'div.epnew-novel-title',
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[2]'
+    ]
+    title = await extract_element(page, title_xpaths)
+
+    return title
+
+# 작가 가져오기
+async def get_author(page):
+    author_xpaths = [
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[3]/p[1]/a',
+        'div.writer-name'
+    ]
+    author = await extract_element(page, author_xpaths)
+
+    return author
+
+# 추천 수 가져오기
+async def get_recommend(page):
+    recommend_xpaths = [
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[4]/div[1]/p[2]/span[2]',
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[2]/span[2]'
+    ]
+    # 추천 수
+    recommend = await extract_element(page, recommend_xpaths)
+
+    return recommend
+
+# 키워드, 태그, 장르 가져오기
+async def get_keywords(page):
+    keywords_xpaths = [
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[1]/p[1]',
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[1]',
+        '.writer-tag:nth-child(2)'
+    ]
+    keywords = await extract_element(page, keywords_xpaths)
+    keywords_items = {
+        '로맨스': '로맨스',
+        '무협': '무협',
+        '라이트노벨':'라이트노벨',
+        '공포':'공포',
+        'SF':'SF',
+        '스포츠':'스포츠',
+        '대체역사':'대체역사',
+        '현대판타지':'현대판타지',
+        '현대':'현대',
+        '판타지':'판타지'
+    }
+
+    genre = '기타'
+    for key, value in keywords_items.items():
+        if key in keywords:
+            genre = value
+            break
+
+    return keywords, genre
     
-    # User Agent 설정
-    ua = UserAgent()
-    user_agent = ua.random
-    # 데이터 디렉토리 생성
-    os.makedirs('data', exist_ok=True)
-    if os.path.exists('data/novelpia_novel_page_link_data.data'):
-        with open('data/novelpia_novel_page_link_data.data', 'rb') as f:
-            all_links = pickle.load(f)
+# 완결, 연재 여부 확인, 나이 제한 확인
+async def get_serial(page):
+    serial_element = await page.locator('.in-badge').inner_text()
+    if '완결' in serial_element:
+        serial = '완결'
     else:
+        serial = '연재중'
+    
+    if '19' in serial_element:
+        age = '19'
+    else:
+        age = '전체'
+
+    return serial, age
+
+# 출판사 가져오기
+async def get_publisher(page):
+    publisher = ''
+
+    return publisher
+
+# 연재 화수 확인
+async def get_page_count(page):
+    page_count_xpaths = [
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[1]/p[3]/span[2]',
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[2]/div[1]/p[3]/span[2]',
+    ]
+    page_count = await page.locator('.writer-name').last.inner_text()
+    page_unit = '화'
+    
+    return page_count, page_unit
+
+# 조회수 확인
+async def get_viewers(page):
+    viewers_xpaths = [
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[4]/div[1]/p[1]/span[2]',
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[1]/span[2]'
+    ]
+    viewers = await page.locator('.counter-line-a p:first-child span:last-child').inner_text()
+
+    return viewers
+
+# 소설 소개 추출
+async def get_summary(page):
+    summary_xpaths = [
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[2]/div[2]',
+        'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[2]'
+    ]
+    summary = await page.locator('.synopsis').first.inner_text()
+
+    return summary
+
+# 각 url에서 소설 정보 가져오기
+async def get_data(page, url): 
+    max_retries = 3
+    retry_count = 0
+    
+    while retry_count < max_retries:
+        response = await page.goto(url, timeout=30000)  # 30초 타임아웃
+        
+        if response.status != 200:
+            retry_count += 1
+            if retry_count < max_retries:
+                print(f"HTTP {response.status} 오류. 재시도 {retry_count}/{max_retries}")
+                
+                # VPN 재연결 (선택적)
+                try:
+                    os.system('nordvpn connect South_Korea')
+                    await asyncio.sleep(120)  # 1분 대기
+                except:
+                    pass
+                continue
+            else:
+                raise Exception(f'HTTP {response.status} 오류가 {max_retries}번 반복됨')
+        
+        break
+    # 페이지 로드 완료 대기
+    await page.wait_for_load_state('networkidle')
+    
+    # 데이터 추출
+    novel_data = await extract_novel_info(page, url)
+    
+    return novel_data
+
+async def extract_novel_info(page, url):
+    img = await get_img(page)
+    title = await get_title(page)
+    author = await get_author(page)
+    recommend = await get_recommend(page)
+    keywords, genre = await get_keywords(page)
+    serial, age = await get_serial(page)
+    publisher = await get_publisher(page)
+    page_count, page_unit = await get_page_count(page)
+    viewers = await get_viewers(page)
+    summary = await get_summary(page)
+    
+    novel_data = {
+        'url': url,
+        'img': img,
+        'title': title,
+        'author': author,
+        'recommend': recommend,
+        'genre': genre,
+        'serial': serial,
+        'publisher': publisher,
+        'summary': summary,
+        'page_count': page_count,
+        'page_unit': page_unit,
+        'age': age,
+        'platform': 'novelpia',
+        'keywords': keywords,
+        'viewers': viewers
+    }
+
+    if any(value is None for value in novel_data.values()):
+        print(novel_data)
+        raise Exception(f'데이터 추출 실패: ', url=url)
+
+    return novel_data
+        
+async def main():
+    # User Agent 설정
+    ua = UserAgent(platforms='desktop')
+    
+    # 데이터 저장할 폴더 만들기
+    os.makedirs('data', exist_ok=True)
+    
+    page_link_path = 'data/novelpia_page_links.link'
+    novel_data_path = 'data/novelpia_novel_data.data'
+    
+    if not os.path.exists(page_link_path):
+        # 최종 페이지 가져오기
         async with async_playwright() as playwright:
-            # 단일 브라우저 및 페이지 생성
-            browser = await playwright.chromium.launch(
-                headless=False,
-                args=[
-                    '--no-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-blink-features=AutomationControlled',
-                    '--disable-web-security',
-                    '--disable-features=VizDisplayCompositor',
-                    '--no-first-run',
-                    '--disable-extensions',
-                    '--disable-default-apps',
-                    '--disable-gpu'
-                ]
-            )
+            page, browser = await create_page(playwright, ua.random)
+            # 로그인하기
+            await login(page)
+            print('마지막 번호 가져오기')
+            last_page_num = await get_last_page(page, 'https://novelpia.com/plus/all/date/1/?main_genre=&is_please_write=')
+        
+            # URL 생성
+            urls = [f"https://novelpia.com/plus/all/date/{i}/?main_genre=&is_please_write=" for i in range(1, last_page_num)]
+
+            # 각 페이지에서 순차적으로 링크 수집
+            all_links = []
+
+             # tqdm 프로그레스 바 생성
+            with tqdm(urls, desc=f"현재 수집된 링크 수: {len(all_links)}", total=len(urls)) as pbar:
+                for url in pbar:
+                    # 링크 수집
+                    links = await get_links(page, url, page_link_path)
+                    all_links.extend(links)
+                    
+                    # tqdm 설명 동적 업데이트
+                    pbar.set_description(f"현재 수집된 링크 수: {len(all_links)}")
+                    
+                    await asyncio.sleep(random.uniform(4, 15))
+            await browser.close()
+        await save_files(page_link_path, all_links)
+        
+    else:
+        all_links = await open_files(page_link_path)
+
+    # 소설 정보 가져오기
+    while True:
+        async with async_playwright() as playwright:
+            if os.path.exists(novel_data_path):
+                urls = await open_files(novel_data_path)
+                urls = [url['url'] for url in urls]
+                urls = [link for link in all_links if link not in urls]
+            else:
+                urls = all_links
+
+            if not urls:
+                print("크롤링할 새로운 URL이 없습니다.")
+                break
             
-            context = await browser.new_context(
-                user_agent=user_agent,
-                is_mobile=False,
-                has_touch=False,
-                viewport={'width': 1920, 'height': 1080}
-            )
-            
-            page = await context.new_page()
+            datas = []
+            page, browser = await create_page(playwright, ua.random)
 
             try:
-                # 로그인 처리
-                await login(page)
+                with tqdm(urls, desc=f"현재 수집된 링크 수: {len(all_links)}", total=len(urls)) as pbar:
+                    for url in pbar:
+                        novel_data = await get_data(page, url)
+                        datas.append(novel_data)
 
-                # 링크 데이터 확인 또는 수집
-                if os.path.exists('data/novelpia_novel_page_link_data.data'):
-                    print("📂 기존 링크 데이터 로드 중...")
-                    with open('data/novelpia_novel_page_link_data.data', 'rb') as f:
-                        all_links = pickle.load(f)
-                else:
-                    print("🔍 새로운 링크 데이터 수집 중...")
-                    
-                    # 최대 페이지 수 가져오기
-                    last_page_num = await get_last_page(page, 'https://novelpia.com/plus/all/date/1/?main_genre=&is_please_write=')
-                    print(f"총 페이지 수: {last_page_num}")
-                    
-                    # URL 생성 (테스트용으로 처음 2페이지만)
-                    urls = [f"https://novelpia.com/plus/all/date/{i}/?main_genre=&is_please_write=" for i in range(1, last_page_num)]  # 테스트용
-                    
-                    # 각 페이지에서 순차적으로 링크 수집
-                    all_links = []
-                    for url in tqdm(urls, desc="📄 페이지별 링크 수집"):
-                        links = await get_links(page, url)
-                        all_links.extend(links)
-                        print(f"수집된 링크 수: {len(links)}")
-                    
-                    # 링크 데이터 저장
-                    with open('data/novelpia_novel_page_link_data.data', 'wb') as f:
-                        pickle.dump(all_links, f)
-                    print(f"📁 총 {len(all_links)}개 링크 저장 완료")
-
+                        # tqdm 설명 동적 업데이트
+                        pbar.set_description(f"현재 수집된 링크 수: {len(datas)}")
+                        await asyncio.sleep(3, 10)
+                if datas:
+                    await save_files(novel_data_path, datas)
+                
             except Exception as e:
-                print(f"❌ 메인 실행 중 에러: {e}")
-                import traceback
-                traceback.print_exc()
-            
+                print('데이터 추출 오류')
+                print(e)
+                print('현재 상황을 저장합니다.')
+
+                old_data = await open_files(novel_data_path)
+                old_data.extend(datas)
+                await save_files(novel_data_path, old_data)
+                    
             finally:
                 await browser.close()
+                continue
 
-    # all_links = all_links[:10]
-    all_links = split_data(all_links, 5)
-
-    all_results = []
-    async with async_playwright() as playwright:
-        # 링크 수집 진행상황 표시
-        for url_list in tqdm(all_links, desc="📄 페이지별 링크 수집", unit="배치"):
-            tasks = [get_data(playwright, url, ua.random) for url in url_list]
-            
-            # tqdm_asyncio로 각 배치 내 태스크 진행상황 표시
-            batch_results = await tqdm_asyncio.gather(
-                *tasks, 
-                desc=f"URL 처리 ({len(url_list)}개)", 
-                unit="페이지",
-                # return_exceptions=True
-            )
-            all_results.extend(batch_results)
-
-    # 데이터 저장
-    if all_results:
-        print(f"\n💾 데이터 저장 중... ({len(all_results)}개)")
-        await save_data(all_results)
-    else:
-        print("❌ 저장할 데이터가 없습니다.")
-
-
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-        print("\n🎊 모든 작업이 완료되었습니다!")
-    except KeyboardInterrupt:
-        print("\n⏹️ 사용자에 의해 중단되었습니다.")
-    except Exception as e:
-        print(f"\n❌ 실행 중 에러: {e}")
-        import traceback
-        traceback.print_exc()
+if __name__ == '__main__':
+    asyncio.run(main())
