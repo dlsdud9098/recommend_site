@@ -426,6 +426,11 @@ if __name__ == '__main__':
         if os.path.exists(page_path):
             print('데이터가 존재합니다. 기존의 데이터를 가져옵니다.')
             urls = open_files(page_path)
+
+            cahce_urls = open_files(data_path)
+            cache_urls = [url['url'] for url in cahce_urls]
+            urls = [url for url in urls if url not in cache_urls]
+
         else:
             # 소설 링크들 가져오기
             urls = asyncio.run(start_get_links())
@@ -434,20 +439,21 @@ if __name__ == '__main__':
         # print()
         all_results = []
         
-        urls = urls[:1000]
+        all_urls = split_data(urls, 1000)
+        print(f'크롤링할 URL 개수: {len(urls)}, 작업 횟수: {len(all_urls)}')
+
         # while True:
-        for _ in range(5):
+        for urls in all_urls:
             try:
-                if os.path.exists(data_path):
-                    cache_urls = open_files(data_path)
-                    cache_url = [url['url'] for url in cache_urls]
-                    # print(cache_urls)
-                    urls = [url for url in urls if url not in cache_url]
+                # if os.path.exists(data_path):
+                #     cache_urls = open_files(data_path)
+                #     cache_url = [url['url'] for url in cache_urls]
+                #     # print(cache_urls)
+                #     urls = [url for url in urls if url not in cache_url]
                     
-                print(f'크롤링할 URL 개수: {len(urls)}')
                 
-                # urls = urls[:10]
                 urls = split_data(urls, 20)
+                # urls = urls[:10]
                 print('링크 수집 중...')
                 for url in urls:
                     results = parmap.map(
@@ -476,7 +482,6 @@ if __name__ == '__main__':
                 else:
                     save_files(data_path, all_results)
                 print('데이터 저장 완료')
-                break
 
             except Exception as e:
                 print('크롤링 중 오류 발생', e)
