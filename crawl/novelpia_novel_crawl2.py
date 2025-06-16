@@ -220,50 +220,53 @@ def get_summary(tree):
 
 # 소설 데이터 가져오기
 def get_novel_data(url):
-    session = create_session()
-    headers = get_headers()
-    
-    response = session.get(url, headers=headers, timeout=30)
-    response.raise_for_status()
-    
-    tree = html.fromstring(response.content)
-    
-    img = get_img(tree)
-    title = get_title(tree)
-    author = get_author(tree)
-    recommend = get_recommend(tree)
-    keywords, genre = get_keywords(tree)
-    serial, age = get_serial(tree)
-    publisher = get_publisher(tree)
-    page_count, page_unit = get_page_count(tree)
-    viewers = get_viewers(tree)
-    summary = get_summary(tree)
-    
-    novel_data = {
-        'url': url,
-        'img': img,
-        'title': title,
-        'author': author,
-        'recommend': recommend,
-        'genre': genre,
-        'serial': serial,
-        'publisher': publisher,
-        'summary': summary,
-        'page_count': page_count,
-        'page_unit': page_unit,
-        'age': age,
-        'platform': 'novelpia',
-        'keywords': keywords,
-        'viewers': viewers
-    }
+    try:
+        session = create_session()
+        headers = get_headers()
+        
+        response = session.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        
+        tree = html.fromstring(response.content)
+        
+        img = get_img(tree)
+        title = get_title(tree)
+        author = get_author(tree)
+        recommend = get_recommend(tree)
+        keywords, genre = get_keywords(tree)
+        serial, age = get_serial(tree)
+        publisher = get_publisher(tree)
+        page_count, page_unit = get_page_count(tree)
+        viewers = get_viewers(tree)
+        summary = get_summary(tree)
+        
+        novel_data = {
+            'url': url,
+            'img': img,
+            'title': title,
+            'author': author,
+            'recommend': recommend,
+            'genre': genre,
+            'serial': serial,
+            'publisher': publisher,
+            'summary': summary,
+            'page_count': page_count,
+            'page_unit': page_unit,
+            'age': age,
+            'platform': 'novelpia',
+            'keywords': keywords,
+            'viewers': viewers
+        }
 
-    # print(novel_data)
+        # print(novel_data)
 
-    if any(value is None for value in novel_data.values()):
-        print(novel_data)
-        raise Exception(f'데이터 추출 실패: ', url=url)
-
-    return novel_data
+        if any(value is None for value in novel_data.values()):
+            # print(novel_data)
+            raise Exception(f'데이터 추출 실패: ', url=url)
+        
+        return novel_data
+    except Exception as e:
+        print(e, url)
 
 # 데이터 나누기
 def split_data(data, split_num):
@@ -440,20 +443,12 @@ if __name__ == '__main__':
         all_results = []
         
         all_urls = split_data(urls, 1000)
-        print(f'크롤링할 URL 개수: {len(urls)}, 작업 횟수: {len(all_urls)}')
-
-        # while True:
-        for urls in all_urls:
-            try:
-                # if os.path.exists(data_path):
-                #     cache_urls = open_files(data_path)
-                #     cache_url = [url['url'] for url in cache_urls]
-                #     # print(cache_urls)
-                #     urls = [url for url in urls if url not in cache_url]
-                    
-                
+        print(f'크롤링할 URL 개수: {len(urls)}')
+        for page_cnt, urls in enumerate(all_urls):
+            print(f'작업 횟수: {page_cnt+1}/{len(all_urls)}')
+            try:                
                 urls = split_data(urls, 20)
-                # urls = urls[:10]
+                # print(len(urls))
                 print('링크 수집 중...')
                 for url in urls:
                     results = parmap.map(
@@ -463,17 +458,11 @@ if __name__ == '__main__':
                         pm_processes = 5,
                         pm_chunksize=1
                     )
-
+                    # print(results)
                     time.sleep(random.uniform(2, 8))
-                    
-                    # links = flatten_results(results)
-                    # links = list(chain.from_iterable(results))
 
                     all_results.extend(results)
                 
-
-                # all_results = list(chain.from_iterable(all_results))
-                # print(all_results)
                 print('크롤링 종료 데이터 저장 시작')
                 if os.path.exists(data_path):
                     old_urls = open_files(data_path)
@@ -483,6 +472,7 @@ if __name__ == '__main__':
                     save_files(data_path, all_results)
                 print('데이터 저장 완료')
 
+                time.sleep(10)
             except Exception as e:
                 print('크롤링 중 오류 발생', e)
                 print('현재 상황을 저장합니다.')
