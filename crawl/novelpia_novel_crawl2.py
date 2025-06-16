@@ -13,6 +13,7 @@ import os
 import asyncio
 from playwright.async_api import async_playwright
 from tqdm import tqdm
+from itertools import chain
 
 # 세션 설정 (재사용 및 재시도 설정)
 def create_session():
@@ -86,6 +87,8 @@ def save_files(file, data):
 
 def extract_element(tree, xpaths, type='text'):
     for xpath in xpaths:
+        if xpath.startswith('xpath='):
+            xpath = xpath[6:]
         element = tree.xpath(xpath)
         if len(element) > 0:
             if type == 'text':
@@ -166,17 +169,13 @@ def get_keywords(tree):
     
 # 완결, 연재 여부 확인, 나이 제한 확인
 def get_serial(tree):
-    serial_element = tree.xpath('//*[@class="in-badge"]').text_content()
-    if '완결' in serial_element:
-        serial = '완결'
+    serial_elements = tree.xpath('//*[@class="in-badge"]')
+    if serial_elements:
+        serial_element = serial_elements[0].text_content()
+        serial = '완결' if '완결' in serial_element else '연재중'
+        age = '19' if '19' in serial_element else '전체'
     else:
-        serial = '연재중'
-    
-    if '19' in serial_element:
-        age = '19'
-    else:
-        age = '전체'
-
+        serial, age = '연재중', '전체'  # 기본값
     return serial, age
 
 # 출판사 가져오기
@@ -191,7 +190,8 @@ def get_page_count(tree):
         'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[1]/p[3]/span[2]',
         'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[2]/div[1]/p[3]/span[2]',
     ]
-    page_count = tree.xpath('//*[@class="writer-name"]')[-1].text_content()
+    page_counts = tree.xpath('//*[@class="writer-name"]')
+    page_count = page_counts[-1].text_content()
     page_unit = '화'
     
     return page_count, page_unit
@@ -202,9 +202,10 @@ def get_viewers(tree):
         'xpath=/html/body/div[6]/div[1]/div[2]/div[4]/div[1]/p[1]/span[2]',
         'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[1]/p[1]/span[2]'
     ]
-    viewers = tree.xpath('.counter-line-a p:first-child span:last-child').text_content()
+    viewers = tree.xpath('//div[contains(@class, "counter-line-a")]//p[1]//span[last()]')
+    viewer = viewers[0].text_content()
 
-    return viewers
+    return viewer
 
 # 소설 소개 추출
 def get_summary(tree):
@@ -212,7 +213,8 @@ def get_summary(tree):
         'xpath=/html/body/div[6]/div[1]/div[2]/div[5]/div[2]/div[2]',
         'xpath=/html/body/div[6]/div[1]/div[2]/div[6]/div[2]/div[2]'
     ]
-    summary = tree.xpath('//*[@class="synopsis"]')[0].text_content()
+    summarys = tree.xpath('//*[@class="synopsis"]')
+    summary = summarys[0].text_content()
 
     return summary
 
@@ -254,6 +256,8 @@ def get_novel_data(url):
         'keywords': keywords,
         'viewers': viewers
     }
+
+    # print(novel_data)
 
     if any(value is None for value in novel_data.values()):
         print(novel_data)
@@ -345,9 +349,9 @@ async def get_last_page(page, url):
         temp = []
         for n in page_num:
             text = await n.text_content()
-            temp.append(text)
-            temp.append(0)
-
+            temp.append(text.replace('\n', '').replace(' ',''))
+            # temp.append(0)
+        # print(temp)
         temp = [int(i) for i in temp if i]
         max_num = max(temp)
         print(f'마지막 번호: {max_num}')
@@ -399,7 +403,7 @@ async def start_get_links():
         # 각 페이지에서 순차적으로 링크 수집
         all_links = []
 
-            # tqdm 프로그레스 바 생성
+            # tqdm 프로그레스 바 생성 
         with tqdm(urls, desc=f"현재 수집된 링크 수: {len(all_links)}", total=len(urls)) as pbar:
             for url in pbar:
                 # 링크 수집
@@ -417,6 +421,7 @@ if __name__ == '__main__':
     page_path = 'data/novelpia_page_links.link'
     data_path = 'data/novelpia_novel_data.data'
     
+    os.makedirs('data', exist_ok=True)
     try:
         if os.path.exists(page_path):
             print('데이터가 존재합니다. 기존의 데이터를 가져옵니다.')
@@ -439,7 +444,7 @@ if __name__ == '__main__':
                     
                 print(f'크롤링할 URL 개수: {len(urls)}')
                 
-                urls = urls[:10]
+                # urls = urls[:10]
                 urls = split_data(urls, 20)
                 print('링크 수집 중...')
                 for url in urls:
@@ -451,27 +456,33 @@ if __name__ == '__main__':
                         pm_chunksize=1
                     )
 
-                    time.sleep(random.uniform(2, 4))
+                    time.sleep(random.uniform(2, 10))
                     
-                    links = flatten_results(results)
-                    all_results.extend(links)
+                    # links = flatten_results(results)
+                    # links = list(chain.from_iterable(results))
+
+                    all_results.extend(results)
                 
+
+                # all_results = list(chain.from_iterable(all_results))
+                # print(all_results)
+                print('크롤링 종료 데이터 저장 시작')
                 if os.path.exists(data_path):
                     old_urls = open_files(data_path)
                     old_urls.extend(all_results)
-                    save_files(data_path, all_results)
+                    save_files(data_path, old_urls)
                 else:
                     save_files(data_path, all_results)
-                
+                print('데이터 저장 완료')
                 break
             except Exception as e:
-                print('크롤링 중 오류 발생')
+                # print('크롤링 중 오류 발생', e)
                 print('현재 상황을 저장합니다.')
                 
                 if os.path.exists(data_path):
                     old_urls = open_files(data_path)
                     old_urls.extend(all_results)
-                    save_files(data_path, all_results)
+                    save_files(data_path, old_urls)
                 else:
                     save_files(data_path, all_results)
                 print('저장 완료')

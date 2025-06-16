@@ -32,7 +32,7 @@ def debug_all_requests():
         
         print("페이지 로딩 중...")
         page.goto('https://novelpia.com/plus')
-        page.wait_for_load_state('networkidle')
+        page.wait_for_load_state('domcontentloaded')
         
         print(f"\n초기 로딩 완료. 요청: {len(all_requests)}개, 응답: {len(all_responses)}개")
         
@@ -59,3 +59,8 @@ def debug_all_requests():
 
 # 실행
 requests, responses = debug_all_requests()
+
+with open('requests.json', 'w', encoding='utf-8') as f:
+    json.dump(requests, f)
+with open('responses.json', 'w', encoding='utf-8') as f:
+    json.dump(responses, f)
