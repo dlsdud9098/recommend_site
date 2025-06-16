@@ -12,9 +12,9 @@ from Crawl_Exception import PageRefreshException, DataExtractionException
 
 
 # 새 페이지 만들기
-async def create_page(playwright, user_agent):
+async def create_page(playwright, user_agent, headless=True):
     browser = await playwright.chromium.launch(
-        headless=True,
+        headless=headless,
         args=[
             '--no-sandbox',
             '--disable-dev-shm-usage',
@@ -330,7 +330,7 @@ async def main():
     if not os.path.exists(page_link_path):
         # 최종 페이지 가져오기
         async with async_playwright() as playwright:
-            page, browser = await create_page(playwright, ua.random)
+            page, browser = await create_page(playwright, ua.random, headless=False)
             # 로그인하기
             await login(page)
             print('마지막 번호 가져오기')
@@ -338,7 +338,7 @@ async def main():
         
             # URL 생성
             urls = [f"https://novelpia.com/plus/all/date/{i}/?main_genre=&is_please_write=" for i in range(1, last_page_num)]
-
+            # urls = urls[:1]
             # 각 페이지에서 순차적으로 링크 수집
             all_links = []
 
@@ -346,26 +346,27 @@ async def main():
             with tqdm(urls, desc=f"현재 수집된 링크 수: {len(all_links)}", total=len(urls)) as pbar:
                 for url in pbar:
                     # 링크 수집
-                    links = await get_links(page, url, page_link_path)
+                    links = await get_links(page, url)
                     all_links.extend(links)
                     
                     # tqdm 설명 동적 업데이트
                     pbar.set_description(f"현재 수집된 링크 수: {len(all_links)}")
                     
-                    await asyncio.sleep(random.uniform(4, 15))
+                    await asyncio.sleep(random.uniform(4, 10))
             await browser.close()
         await save_files(page_link_path, all_links)
-        
     else:
         all_links = await open_files(page_link_path)
+        print(f'총 URL: {len(all_links)}')
 
     # 소설 정보 가져오기
     while True:
         async with async_playwright() as playwright:
             if os.path.exists(novel_data_path):
-                urls = await open_files(novel_data_path)
-                urls = [url['url'] for url in urls]
-                urls = [link for link in all_links if link not in urls]
+                cache_urls = await open_files(novel_data_path)
+                cache_urls = [url['url'] for url in cache_urls]
+                urls = [link for link in all_links if link not in cache_urls]
+                print(f'수집할 URL 개수: {len(urls)}')
             else:
                 urls = all_links
 
@@ -373,30 +374,36 @@ async def main():
                 print("크롤링할 새로운 URL이 없습니다.")
                 break
             
+            print(len(urls))
+
             datas = []
             page, browser = await create_page(playwright, ua.random)
 
             try:
-                with tqdm(urls, desc=f"현재 수집된 링크 수: {len(all_links)}", total=len(urls)) as pbar:
+                with tqdm(urls, desc=f"현재 수집된 링크 수: {len(datas)}", total=len(urls)) as pbar:
                     for url in pbar:
                         novel_data = await get_data(page, url)
                         datas.append(novel_data)
 
                         # tqdm 설명 동적 업데이트
                         pbar.set_description(f"현재 수집된 링크 수: {len(datas)}")
-                        await asyncio.sleep(3, 10)
+                        await asyncio.sleep(2, 4)
                 if datas:
+                    print('데이터 저장')
                     await save_files(novel_data_path, datas)
+                    break
                 
             except Exception as e:
                 print('데이터 추출 오류')
                 print(e)
                 print('현재 상황을 저장합니다.')
 
-                old_data = await open_files(novel_data_path)
-                old_data.extend(datas)
-                await save_files(novel_data_path, old_data)
-                    
+                if os.path.exists(novel_data_path):
+                    old_data = await open_files(novel_data_path)
+                    old_data.extend(datas)
+                    await save_files(novel_data_path, old_data)
+                else:
+                    await save_files(novel_data_path, datas)
             finally:
                 await browser.close()
                 continue
