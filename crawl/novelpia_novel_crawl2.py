@@ -434,7 +434,9 @@ if __name__ == '__main__':
         # print()
         all_results = []
         
-        while True:
+        urls = urls[:1000]
+        # while True:
+        for _ in range(5):
             try:
                 if os.path.exists(data_path):
                     cache_urls = open_files(data_path)
@@ -456,7 +458,7 @@ if __name__ == '__main__':
                         pm_chunksize=1
                     )
 
-                    time.sleep(random.uniform(2, 10))
+                    time.sleep(random.uniform(2, 8))
                     
                     # links = flatten_results(results)
                     # links = list(chain.from_iterable(results))
@@ -475,8 +477,9 @@ if __name__ == '__main__':
                     save_files(data_path, all_results)
                 print('데이터 저장 완료')
                 break
+
             except Exception as e:
-                # print('크롤링 중 오류 발생', e)
+                print('크롤링 중 오류 발생', e)
                 print('현재 상황을 저장합니다.')
                 
                 if os.path.exists(data_path):
