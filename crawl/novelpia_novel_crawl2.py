@@ -267,6 +267,7 @@ def get_novel_data(url):
         return novel_data
     except Exception as e:
         print(e, url)
+        return {}
 
 # 데이터 나누기
 def split_data(data, split_num):
