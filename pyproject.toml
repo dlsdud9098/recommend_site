@@ -10,9 +10,12 @@ dependencies = [
     "fake-useragent>=2.2.0",
     "ipykernel>=6.29.5",
     "lxml>=5.4.0",
+    "lzstring>=1.0.4",
     "pandas>=2.3.0",
     "parmap>=1.7.0",
     "playwright>=1.52.0",
     "requests>=2.32.3",
+    "rsa>=4.9.1",
+    "selenium>=4.33.0",
     "tqdm>=4.67.1",
 ]

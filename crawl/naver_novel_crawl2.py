@@ -11,10 +11,6 @@ import time
 import parmap
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-import asyncio
-from playwright.async_api import async_playwright
-import math
-import json
 
 # 세션 설정 (재사용 및 재시도 설정)
 def create_session():
@@ -24,7 +20,7 @@ def create_session():
     retry_strategy = Retry(
         total=3,
         status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["HEAD", "GET", "OPTIONS"],  # method_whitelist -> allowed_methods
+        allowed_methods=["HEAD", "GET", "OPTIONS"],
         backoff_factor=1
     )
     adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -45,169 +41,244 @@ def get_headers():
         'Upgrade-Insecure-Requests': '1',
     }
 
-# Playwright 관련 함수들
-async def create_page(playwright, user_agent, headless=True):
-    """Playwright 페이지 생성"""
-    browser = None
+def login_and_get_cookies():
+    """Selenium을 사용해 로그인 및 성인 인증 후 쿠키 반환"""
     try:
-        browser = await playwright.chromium.launch(
-            headless=headless,
-            args=[
-                '--no-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-blink-features=AutomationControlled',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor',
-                '--no-first-run',
-                '--disable-extensions',
-                '--disable-default-apps',
-                '--disable-gpu'
-            ]
-        )
-        context = await browser.new_context(
-            user_agent=user_agent,
-            is_mobile=False,
-            has_touch=False,
-            viewport={'width': 1920, 'height': 1080}
-        )
-        page = await context.new_page()
-        return page, browser
-    except Exception as e:
-        print(f'Playwright 페이지 생성 에러: {e}')
-        return None, None
-
-async def login_playwright(page):
-    """Playwright로 로그인 처리"""
-    await page.goto('https://series.naver.com/novel/categoryProductList.series?categoryTypeCode=all')
-    
-    # 로그인 버튼이 있는지 확인
-    login_button = page.locator('xpath=//*[@id="gnb_login_button"]')
-    if await login_button.count() > 0:
-        await login_button.click()
-
-    with open('data/naver_id_pw.json', 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    id = data['id']
-    pw = data['pw']
-    await page.fill('xpath=//*[@id="id"]', id)
-    await page.fill('xpath=//*[@id="pw"]', pw)
-
-    await page.locator('xpath=//*[@id="log.login"]').click()
-    print("브라우저에서 로그인을 완료한 후 Enter를 눌러주세요...")
-    input()  # 사용자가 수동으로 로그인 완료할 때까지 대기
-
-async def extract_xpath_playwright(page, xpaths, attr_type='text'):
-    """Playwright에서 XPath 추출"""
-    for xpath in xpaths:
-        try:
-            element = page.locator(f'xpath={xpath}')
-            if await element.count() > 0:
-                if attr_type == 'text':
-                    data = await element.first.inner_text()
-                elif attr_type == 'src':
-                    data = await element.first.get_attribute('src')
-                elif attr_type == 'href':
-                    data = await element.first.get_attribute('href')
-                
-                if data and data.strip():
-                    if '_님로그아웃' in data:
-                        continue
-                    return data.strip()
-        except Exception as e:
-            continue
-    return ''
-
-async def get_data_playwright(page, url, age=19):
-    """Playwright로 19금 소설 데이터 추출"""
-    try:
-        max_retries = 3
-        retry_count = 0
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
         
-        while retry_count < max_retries:
-            response = await page.goto(url, timeout=30000)
+        options = Options()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('useAutomationExtension', False)
+        
+        driver = webdriver.Chrome(options=options)
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        
+        try:
+            # 네이버 로그인 페이지로 이동
+            driver.get('https://nid.naver.com/nidlogin.login')
             
-            if response.status != 200:
-                retry_count += 1
-                if retry_count < max_retries:
-                    print(f"HTTP {response.status} 오류. 재시도 {retry_count}/{max_retries}")
-                    await asyncio.sleep(random.uniform(1, 3))
-                    continue
+            print("=" * 60)
+            print("🔐 네이버 로그인이 필요합니다.")
+            print("=" * 60)
+            print("브라우저에서 네이버 로그인을 완료한 후 Enter를 눌러주세요...")
+            input()
+            
+            # 성인 인증 테스트를 위해 19금 소설 페이지로 이동
+            test_url = 'https://series.naver.com/novel/detail.series?productNo=12340968'
+            print(f"19금 콘텐츠 접근 테스트: {test_url}")
+            driver.get(test_url)
+            time.sleep(5)  # 페이지 로딩 대기 시간 증가
+            
+            # 성인 인증 상태 확인
+            page_source = driver.page_source
+            print("페이지 로딩 완료, 접근 상태 확인 중...")
+            
+            # 다양한 키워드로 접근 제한 확인
+            restriction_keywords = [
+                '성인인증', '19세 이상', '본인인증', '성인 콘텐츠',
+                'adult_certification', '성인 작품', '연령 제한'
+            ]
+            
+            is_restricted = any(keyword in page_source for keyword in restriction_keywords)
+            
+            if is_restricted:
+                print("❌ 성인 콘텐츠 접근이 제한되어 있습니다.")
+                print("다음 중 하나의 문제일 수 있습니다:")
+                print("1. 성인 인증이 완료되지 않음")
+                print("2. 계정 설정에서 성인 콘텐츠 보기가 비활성화됨")
+                print("3. 브라우저에서 직접 19금 콘텐츠에 접근하여 인증을 완료해주세요")
+                print("\n브라우저에서 성인 인증을 완료한 후 Enter를 누르세요...")
+                input()
+                
+                # 다시 확인
+                driver.refresh()
+                time.sleep(3)
+                page_source = driver.page_source
+                
+                if any(keyword in page_source for keyword in restriction_keywords):
+                    print("⚠️ 여전히 접근이 제한됩니다. 그래도 쿠키를 저장하여 시도해보겠습니다.")
                 else:
-                    raise Exception(f'HTTP {response.status} 오류가 {max_retries}번 반복됨')
-            break
+                    print("✅ 성인 콘텐츠 접근 성공!")
+            else:
+                print("✅ 성인 콘텐츠 접근 성공!")
+            
+            # 모든 도메인에서 쿠키 수집
+            all_cookies = {}
+            
+            # 현재 페이지 쿠키
+            for cookie in driver.get_cookies():
+                all_cookies[cookie['name']] = cookie['value']
+            
+            # 네이버 메인으로 이동하여 추가 쿠키 수집
+            driver.get('https://www.naver.com')
+            time.sleep(2)
+            for cookie in driver.get_cookies():
+                all_cookies[cookie['name']] = cookie['value']
+            
+            # 네이버 시리즈 메인으로 이동하여 추가 쿠키 수집
+            driver.get('https://series.naver.com')
+            time.sleep(2)
+            for cookie in driver.get_cookies():
+                all_cookies[cookie['name']] = cookie['value']
+            
+            print(f"추출된 쿠키 수: {len(all_cookies)}개")
+            
+            # 중요 쿠키들이 있는지 확인
+            important_cookies = ['NID_AUT', 'NID_SES', 'NACT', 'nx_ssl']
+            found_important = [name for name in important_cookies if name in all_cookies]
+            print(f"중요 쿠키 발견: {found_important}")
+            
+            return all_cookies
+            
+        finally:
+            driver.quit()
+            
+    except ImportError:
+        raise ImportError("Selenium이 설치되지 않았습니다. pip install selenium")
+    except Exception as e:
+        raise Exception(f"로그인 실패: {e}")
 
-        # 페이지 로딩 대기
-        await asyncio.sleep(1)
-
-        # 데이터 추출 (Playwright 방식)
-        img_xpaths = [
-            '/html/body/div[1]/div[2]/div[1]/span/img',
-            '//*[@id="container"]/div[1]/a/img',
-            '//*[@id="container"]/div[1]/span/img',
-            '//*[@id="ct"]/div[1]/div[1]/div[1]/div[1]/a/img'
-        ]
-        img = await extract_xpath_playwright(page, img_xpaths, 'src')
-
-        title_xpaths = [
-            '//*[@id="content"]/div[1]/h2',
-            '//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/strong',
-            '//*[@id="content"]/div[2]',
-            '//*[@id="content"]/div[2]/h2'
-        ]
-        title = await extract_xpath_playwright(page, title_xpaths)
-
-        rating_xpaths = [
-            '//*[@id="content"]/div[1]/div[1]/em',
-            '//*[@id="content"]/div[2]/div[1]',
-            '//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[1]/ul/li/span/span'
-        ]
-        rating = await extract_xpath_playwright(page, rating_xpaths)
-
-        genre_xpaths = [
-            '//*[@id="content"]/ul[1]/li/ul/li[2]/span/a',
-            '//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[1]/dl/dd[2]'
-        ]
-        genre = await extract_xpath_playwright(page, genre_xpaths)
-
-        serial_xpaths = [
-            '//*[@id="content"]/ul[1]/li/ul/li[1]/span',
-            '//*[@id="ct"]/div[1]/div[1]/div[1]/div[2]/div[2]/ul/li[1]/dl/dd[1]'
-        ]
-        serial = await extract_xpath_playwright(page, serial_xpaths)
-
-        publisher_xpaths = ['//*[@id="content"]/ul[1]/li/ul/li[3]']
-        author_xpaths = [
-            '//*[@id="content"]/ul[1]/li/ul/li[4]/a',
-            '//*[@id="content"]/ul[1]/li/ul/li[3]/a'
-        ]
-        publisher = await extract_xpath_playwright(page, publisher_xpaths)
-        author = await extract_xpath_playwright(page, author_xpaths)
-
-        # 설명 - "더보기" 버튼 클릭 처리
-        more_button = page.locator('xpath=//*[@id="content"]/div[2]/div[1]/span/a')
-        if await more_button.count() > 0:
-            await more_button.click()
-            await asyncio.sleep(0.5)
-
-        summary_xpaths = [
-            '//*[@id="content"]/div[2]/div[2]',
-            '//*[@id="content"]/div[2]/div'
-        ]
-        summary = await extract_xpath_playwright(page, summary_xpaths)
-
-        page_count_xpaths = ['//*[@id="content"]/h5/strong']
-        page_count = await extract_xpath_playwright(page, page_count_xpaths)
-
-        page_unit_xpaths = ['//*[contains(@class, "end_total_episode")]']
-        page_unit = await extract_xpath_playwright(page, page_unit_xpaths)
+def get_data_with_selenium(url_age_tuple):
+    """Selenium을 사용한 19금 데이터 추출 (각 프로세스에서 개별 브라우저 실행)"""
+    url, age = url_age_tuple
+    
+    try:
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        
+        # 헤드리스 Chrome 설정
+        options = Options()
+        options.add_argument('--headless')  # 백그라운드 실행
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-extensions')
+        options.add_argument('--disable-logging')
+        options.add_argument('--disable-web-security')
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_experimental_option("detach", False)
+        
+        driver = webdriver.Chrome(options=options)
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         try:
-            if page_unit:
-                page_unit = page_unit.strip()[-1]
-        except:
-            print(f"페이지 단위 추출 실패: {page_unit}")
-
+            # 쿠키 파일에서 로그인 정보 로드
+            cookies_path = 'data/naver_cookies.pickle'
+            if os.path.exists(cookies_path):
+                cookies = open_files(cookies_path)
+                
+                # 네이버 메인으로 이동 후 쿠키 설정
+                driver.get('https://www.naver.com')
+                
+                # 쿠키 설정
+                for name, value in cookies.items():
+                    try:
+                        driver.add_cookie({'name': name, 'value': value, 'domain': '.naver.com'})
+                    except:
+                        continue
+                
+                # 페이지 새로고침으로 쿠키 적용
+                driver.refresh()
+                time.sleep(1)
+            else:
+                print(f"쿠키 파일이 없습니다: {url}")
+                return None
+            
+            # 19금 페이지로 이동
+            driver.get(url)
+            time.sleep(2)
+            
+            # 페이지 소스 가져오기
+            page_source = driver.page_source
+            
+            # 접근 제한 확인
+            if any(keyword in page_source.lower() for keyword in 
+                   ['성인인증', '19세 이상', '본인인증', '로그인이 필요']):
+                print(f"19금 접근 제한: {url}")
+                return None
+            
+            # lxml로 파싱
+            tree = html.fromstring(page_source)
+            
+            # 더보기 버튼 클릭 (요약 전체 보기)
+            try:
+                more_button = driver.find_element(By.XPATH, '//*[@id="content"]/div[2]/div[1]/span/a')
+                driver.execute_script("arguments[0].click();", more_button)
+                time.sleep(1)
+                # 새로운 페이지 소스로 다시 파싱
+                tree = html.fromstring(driver.page_source)
+            except:
+                pass  # 더보기 버튼이 없으면 무시
+            
+            # 데이터 추출
+            img = get_img(tree)
+            title = get_title(tree)
+            rating = get_rating(tree)
+            genre = get_genre(tree)
+            serial = get_serial(tree)
+            publisher, author = get_publisher_author(tree)
+            summary = get_summary(tree)
+            page_count = get_page_count(tree)
+            page_unit = get_page_unit(tree)
+            
+            novel_data = {
+                'url': url,
+                'img': img,
+                'title': title,
+                'author': author,
+                'rating': rating,
+                'genre': genre,
+                'serial': serial,
+                'publisher': publisher,
+                'summary': summary,
+                'page_count': page_count,
+                'page_unit': page_unit,
+                'age': 19,
+                'platform': 'naver'
+            }
+            
+            # 필수 데이터 체크
+            if not all([title, rating, genre, serial, publisher, summary, page_count, page_unit]):
+                print(f"데이터 누락: {url} - {title}")
+                return None
+            
+            print(f"✅ 19금 추출 성공: {title}")
+            time.sleep(random.uniform(1, 2))
+            return novel_data
+            
+        finally:
+            driver.quit()
+            
+    except ImportError:
+        print("Selenium이 설치되지 않았습니다.")
+        return None
+    except Exception as e:
+        print(f"Selenium 데이터 추출 에러 {url}: {e}")
+        return None
+        
+        # 데이터 추출
+        img = get_img(tree)
+        title = get_title(tree)
+        rating = get_rating(tree)
+        genre = get_genre(tree)
+        serial = get_serial(tree)
+        publisher, author = get_publisher_author(tree)
+        summary = get_summary(tree)
+        page_count = get_page_count(tree)
+        page_unit = get_page_unit(tree)
+        
         novel_data = {
             'url': url,
             'img': img,
@@ -223,181 +294,22 @@ async def get_data_playwright(page, url, age=19):
             'age': 19 if age == 19 else '전체',
             'platform': 'naver'
         }
-
+        
         # 필수 데이터 체크
         if not all([title, rating, genre, serial, publisher, summary, page_count, page_unit]):
             print(f"데이터 누락: {url}")
-            print(novel_data)
+            # print(novel_data)
             raise Exception('데이터 누락 발생')
-
-        await asyncio.sleep(random.uniform(1, 2))
+        
+        # 딜레이 추가 (서버 부하 방지)
+        time.sleep(random.uniform(0.5, 1.5))
         return novel_data
-
+        
     except Exception as e:
-        print(f"Playwright 데이터 추출 에러 {url}: {e}")
+        print(f"데이터 추출 에러 {url}: {e}")
         return None
-    
-
-
-# async def get_19(nineteen_links):
-#     """19금 소설 크롤링 (Playwright 사용)"""
-#     ua = UserAgent(platforms='desktop')
-#     all_results = []
-
-#     async with async_playwright() as playwright:
-#         page, browser = await create_page(playwright, ua.random, headless=False)
-#         if not page:
-#             print("Playwright 페이지 생성 실패")
-#             return []
-            
-#         await login_playwright(page)
-#         await asyncio.sleep(1)
-        
-#         with tqdm(nineteen_links, desc=f"현재 수집된 링크 수: {len(all_results)}", total=len(nineteen_links)) as pbar:
-#             for url in pbar:
-#                 novel_data = await get_data_playwright(page, url, age=19)
-#                 if novel_data:
-#                     all_results.append(novel_data)
-
-#                 # tqdm 설명 동적 업데이트
-#                 pbar.set_description(f"현재 수집된 링크 수: {len(all_results)}")
-#                 await asyncio.sleep(random.uniform(1, 2))
-                
-#         if browser:
-#             await browser.close()
-    
-#     return all_results
-
-async def get_19(nineteen_links):
-    """19금 소설 크롤링 (Playwright 사용)"""
-    ua = UserAgent(platforms='desktop')
-    browsers = []
-    pages = []
-    all_results = []
-    
-    async with async_playwright() as playwright:
-        # 1단계: 5개 브라우저 생성 및 로그인
-        print("5개 브라우저 생성 및 로그인 중...")
-        for i in range(5):
-            print(f"브라우저 {i+1} 생성 중...")
-            
-            # 브라우저 생성
-            browser = await playwright.chromium.launch(headless=False)
-            
-            # 페이지 생성
-            page = await browser.new_page()
-            await page.set_extra_http_headers({
-                'User-Agent': ua.random
-            })
-            
-            # 로그인
-            await login_playwright(page)
-            print(f"브라우저 {i+1} 로그인 완료")
-            
-            browsers.append(browser)
-            pages.append(page)
-            
-            await asyncio.sleep(1)
-        
-        print("모든 브라우저 준비 완료! 크롤링 시작...")
-        
-        # 2단계: URL을 5개 그룹으로 나누기
-        def split_urls(urls, num_parts):
-            chunk_size = math.ceil(len(urls) / num_parts)
-            chunks = []
-            for i in range(num_parts):
-                start = i * chunk_size
-                end = min((i + 1) * chunk_size, len(urls))
-                chunks.append(urls[start:end])
-            return chunks
-        
-        url_chunks = split_urls(nineteen_links, 5)
-        
-        # 3단계: 각 브라우저가 처리할 함수
-        async def process_chunk(page, urls, browser_id, pbar):
-            results = []
-            for url in urls:
-                try:
-                    novel_data = await get_data_playwright(page, url, age=19)
-                    if novel_data:
-                        results.append(novel_data)
-                    
-                    # tqdm 업데이트
-                    pbar.update(1)
-                    pbar.set_description(f"현재 수집된 링크 수: {len(all_results) + sum(len(r) for r in [results])}")
-                    
-                    await asyncio.sleep(random.uniform(1, 2))
-                except Exception as e:
-                    print(f"\n브라우저 {browser_id} 오류: {e}")
-                    pbar.update(1)
-            return results
-        
-        # 4단계: 5개 브라우저로 병렬 실행 (tqdm 적용)
-        tasks = []
-        
-        # tqdm 초기화
-        with tqdm(total=len(nineteen_links), desc="현재 수집된 링크 수: 0") as pbar:
-            for i in range(5):
-                if i < len(url_chunks) and url_chunks[i]:  # 빈 청크가 아닌 경우
-                    task = process_chunk(pages[i], url_chunks[i], i+1, pbar)
-                    tasks.append(task)
-            
-            # 모든 작업을 병렬로 실행
-            results_lists = await asyncio.gather(*tasks)
-        
-        # 결과 합치기
-        for results in results_lists:
-            all_results.extend(results)
-        
-        print(f"크롤링 완료! 총 {len(all_results)}개 수집")
-        
-        # 5단계: 브라우저 닫기
-        for i, browser in enumerate(browsers):
-            await browser.close()
-            print(f"브라우저 {i+1} 닫음")
-    
-    return all_results
-
-
-def get_login_cookies_selenium():
-    """Selenium을 사용해 로그인 후 쿠키 반환"""
-    try:
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        
-        options = Options()
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        
-        driver = webdriver.Chrome(options=options)
-        
-        try:
-            # 로그인 페이지 이동
-            driver.get('https://nid.naver.com/nidlogin.login')
-            
-            # 수동 로그인 대기
-            print("브라우저에서 로그인을 완료한 후 Enter를 눌러주세요...")
-            input()
-            
-            # 로그인 확인
-            if 'series.naver.com' not in driver.current_url:
-                driver.get('https://series.naver.com')
-            
-            # 쿠키 추출
-            cookies = {}
-            for cookie in driver.get_cookies():
-                cookies[cookie['name']] = cookie['value']
-            
-            print(f"추출된 쿠키 수: {len(cookies)}개")
-            return cookies
-            
-        finally:
-            driver.quit()
-            
-    except ImportError:
-        raise ImportError("Selenium이 설치되지 않았습니다. pip install selenium")
-    except Exception as e:
-        raise Exception(f"Selenium 로그인 실패: {e}")
+    finally:
+        session.close()
 
 # 데이터 나누기
 def split_data(data, split_num):
@@ -597,7 +509,7 @@ def get_age(tree):
     return extract_xpath(tree, age_xpaths)
 
 def get_data_with_session(url_age_tuple, session=None):
-    """세션을 사용한 단일 소설 데이터 추출 (19금용)"""
+    """세션을 사용한 단일 소설 데이터 추출 (전체 이용가용)"""
     url, age = url_age_tuple
     
     if session is None:
@@ -656,7 +568,7 @@ def get_data_with_session(url_age_tuple, session=None):
         
         # 필수 데이터 체크
         if not all([title, rating, genre, serial, publisher, summary, page_count, page_unit]):
-        #     print(f"데이터 누락: {url}")
+            # print(f"데이터 누락: {url}")
             # print(novel_data)
             raise Exception('데이터 누락 발생')
         
@@ -666,7 +578,7 @@ def get_data_with_session(url_age_tuple, session=None):
         
     except Exception as e:
         # print(f"데이터 추출 에러 {url}: {e}")
-        return {}
+        return None
     finally:
         if should_close:
             session.close()
@@ -703,6 +615,7 @@ def main():
     
     novel_data_path = 'data/naver_novel_data.data'
     novel_page_path = 'data/naver_page_links.link'
+    cookies_path = 'data/naver_cookies.pickle'
     
     # URL 수집
     if os.path.exists(novel_page_path):
@@ -783,18 +696,57 @@ def main():
             #         # 배치 간 딜레이
             #         time.sleep(random.uniform(1, 4))
                 
-            #     print(f"전체 이용가 크롤링 완료: {len([r for r in all_results if r['url'] == '전체'])}개")
+            #     print(f"전체 이용가 크롤링 완료: {len([r for r in all_results if r and r.get('age') == '전체'])}개")
             
-            # 2. 19금 소설 크롤링 (Playwright 사용)
+            # 2. 19금 소설 크롤링 (Selenium 기반 병렬 처리)
             if nineteen_links:
                 print("19금 소설 크롤링 시작...")
-                print("Playwright를 사용하여 19금 콘텐츠를 크롤링합니다.")
+                print("각 프로세스에서 개별 Selenium 브라우저를 사용합니다.")
                 
-                # 비동기 함수 호출
-                nineteen_results = asyncio.run(get_19(nineteen_links))
-                all_results.extend(nineteen_results)
+                # 먼저 로그인하여 쿠키 저장
+                if not os.path.exists(cookies_path):
+                    print("네이버 로그인이 필요합니다.")
+                    try:
+                        cookies = login_and_get_cookies()
+                        save_files(cookies_path, cookies)
+                        print("로그인 쿠키 저장 완료")
+                    except Exception as login_error:
+                        print(f"로그인 실패: {login_error}")
+                        print("19금 크롤링을 건너뜁니다.")
+                        break
+                else:
+                    print("기존 쿠키 파일 사용")
                 
-                print(f"19금 크롤링 완료: {len(nineteen_results)}개")
+                # 19금 링크 튜플 생성 (쿠키 정보 없이)
+                nineteen_tuples = [(url, 19) for url in nineteen_links]
+                
+                # 배치 단위로 나누어서 처리
+                batches = split_data(nineteen_tuples, 3)  # 3개씩 처리 (Selenium은 리소스 많이 사용)
+                
+                for i, batch in enumerate(tqdm(batches, desc="19금 배치 처리")):
+                    print(f"\n19금 배치 {i+1}/{len(batches)} 처리 중...")
+                    batch_results = parmap.map(
+                        get_data_with_selenium,  # Selenium 함수 사용
+                        batch,
+                        pm_pbar=False,
+                        pm_processes=2  # Selenium은 2개 프로세스로 제한
+                    )
+                    
+                    # 결과 확인 및 통계
+                    valid_batch_results = [result for result in batch_results if result is not None]
+                    failed_count = len(batch) - len(valid_batch_results)
+                    
+                    print(f"배치 결과: 성공 {len(valid_batch_results)}개, 실패 {failed_count}개")
+                    
+                    all_results.extend(valid_batch_results)
+                    
+                    # 배치 간 긴 딜레이 (리소스 정리 시간 확보)
+                    if i < len(batches) - 1:  # 마지막 배치가 아니면
+                        delay = random.uniform(5, 8)
+                        print(f"다음 배치까지 {delay:.1f}초 대기 (브라우저 정리 시간)...")
+                        time.sleep(delay)
+                
+                print(f"19금 크롤링 완료: {len([r for r in all_results if r and r.get('age') == 19])}개")
             
             print(f"총 수집된 데이터: {len(all_results)}개")
             
