@@ -678,18 +678,18 @@ def main():
                     # 배치 간 딜레이
                     time.sleep(random.uniform(1, 4))
                 
-                print(f"전체 이용가 크롤링 완료: {len([r for r in all_results if r['age'] == '전체'])}개")
+                # print(f"전체 이용가 크롤링 완료: {len([r for r in all_results if r['url'] == '전체'])}개")
             
             # 2. 19금 소설 크롤링 (Playwright 사용)
-            # if nineteen_links:
-            #     print("19금 소설 크롤링 시작...")
-            #     print("Playwright를 사용하여 19금 콘텐츠를 크롤링합니다.")
+            if nineteen_links:
+                print("19금 소설 크롤링 시작...")
+                print("Playwright를 사용하여 19금 콘텐츠를 크롤링합니다.")
                 
-            #     # 비동기 함수 호출
-            #     nineteen_results = asyncio.run(get_19(nineteen_links))
-            #     all_results.extend(nineteen_results)
+                # 비동기 함수 호출
+                nineteen_results = asyncio.run(get_19(nineteen_links))
+                all_results.extend(nineteen_results)
                 
-            #     print(f"19금 크롤링 완료: {len(nineteen_results)}개")
+                print(f"19금 크롤링 완료: {len(nineteen_results)}개")
             
             print(f"총 수집된 데이터: {len(all_results)}개")
             
