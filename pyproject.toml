@@ -14,6 +14,7 @@ dependencies = [
     "pandas>=2.3.0",
     "parmap>=1.7.0",
     "playwright>=1.52.0",
+    "pymysql>=1.1.1",
     "requests>=2.32.3",
     "rsa>=4.9.1",
     "selenium>=4.33.0",
